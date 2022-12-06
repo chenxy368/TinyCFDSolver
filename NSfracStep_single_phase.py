@@ -33,9 +33,9 @@ OUTLET = 8
 domain_index = {'interior': INTERIOR, 'wall': WALL, 'down_ghost': DOWN_GHOST, 'up_ghost': UP_GHOST, 'left_ghost': LEFT_GHOST, 'right_ghost': RIGHT_GHOST, 'boundary': BOUNDARY, 'inlet': INLET, 'outlet': OUTLET}
 
 # Load mesh
-mesh_p = np.loadtxt("p_mesh_half.csv", delimiter=",", dtype = int)
-mesh_u = np.loadtxt("u_mesh_half.csv", delimiter=",", dtype = int)
-mesh_v = np.loadtxt("v_mesh_half.csv", delimiter=",", dtype = int)
+mesh_p = np.loadtxt("half_case/p_mesh_half.csv", delimiter=",", dtype = int)
+mesh_u = np.loadtxt("half_case/u_mesh_half.csv", delimiter=",", dtype = int)
+mesh_v = np.loadtxt("half_case/v_mesh_half.csv", delimiter=",", dtype = int)
     
 mesh_p = mesh_p.transpose()
 mesh_u = mesh_u.transpose()
