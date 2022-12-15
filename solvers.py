@@ -65,6 +65,7 @@ def poisson_iterative_solver(domain_matrix, domain_index, boundary_condition, bo
         X[interior] = 1 / 4 * (X[interior[0] + 1, interior[1]] + X[interior[0] - 1, interior[1]] + X[interior[0], interior[1] + 1] + X[interior[0], interior[1] - 1]) - \
             dx ** 2 / 4 * f[interior]
 
+ 
         # apply boundary conditions
         for key, value in boundary_condition_type.items():
             if value == 'Dirichlet':
