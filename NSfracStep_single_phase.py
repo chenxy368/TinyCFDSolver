@@ -63,15 +63,11 @@ OUTLET = 7
 domain_index = {'interior': INTERIOR, 'wall': WALL, 'down_ghost': DOWN_GHOST, 'up_ghost': UP_GHOST, 'left_ghost': LEFT_GHOST, 'right_ghost': RIGHT_GHOST, 'boundary': BOUNDARY, 'inlet': INLET, 'outlet': OUTLET}
 
 # Load mesh
-<<<<<<< HEAD
+          
 mesh_p = np.loadtxt("half_case/p_mesh.csv", delimiter=",", dtype = int)
 mesh_u = np.loadtxt("half_case/u_mesh.csv", delimiter=",", dtype = int)
 mesh_v = np.loadtxt("half_case/v_mesh.csv", delimiter=",", dtype = int)
-=======
-mesh_p = np.loadtxt("half_case/p_mesh_half.csv", delimiter=",", dtype = int)
-mesh_u = np.loadtxt("half_case/u_mesh_half.csv", delimiter=",", dtype = int)
-mesh_v = np.loadtxt("half_case/v_mesh_half.csv", delimiter=",", dtype = int)
->>>>>>> e3ea04ac560879941a1d72ac10c48f48f54390d4
+
     
 mesh_p = mesh_p.transpose()
 mesh_u = mesh_u.transpose()
@@ -222,17 +218,7 @@ for t in range(num_timesteps):
         velocity_list.append(velocity)
         pressure_list.append(p)
         plot_one_frame(velocity, t + 1, dt, "velocity magnitude at ", "velocity[m/s]", 0.0, 0.07)        
-        plot_one_frame(p, t + 1, dt, "pressure at ", "pressure[Pa]", 0.0, 5000.0) 
-        
-        '''
-        plt.figure()
-        p_line = p.transpose()[20:40, 41]
-        x = np.linspace(0, 0.1, 20)
-        plt.plot(x, p_line)
-        plt.xlabel('x')
-        plt.ylabel('p')
-        plt.title('Pressure at y = 0.2')
-        '''
+        plot_one_frame(p, t + 1, dt, "pressure at ", "pressure[Pa]", 0.0, 5000.0)        
         
 
 
