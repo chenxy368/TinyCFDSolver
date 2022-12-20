@@ -1,0 +1,23 @@
+u -1 INTERIOR
+u 0 WALL Dirichlet 0
+u 5 BOUNDARY Dirichlet 0
+u 2 DOWN_GHOST Neumann 0 0 1 -1
+u 1 UP_GHOST Neumann 0 0 -1 -1
+u 6 INLET Dirichlet 0.05
+u 7 OUTLET Neumann 0 0 -1 1
+v -1 INTERIOR
+v 0 WALL Dirichlet 0
+v 5 BOUNDARY Dirichlet 0
+v 3 LEFT_GHOST Neumann 0 1 0 -1
+v 4 RIGHT_GHOST Neumann 0 -1 0 -1
+v 6 INLET Dirichlet 0
+v 7 OUTLET Neumann 0 0 -1 1
+p -1 INTERIOR
+p 0 WALL Dirichlet 0
+p 5 BOUNDARY Dirichlet 0
+p 2 DOWN_GHOST Neumann 0 0 1 1
+p 1 UP_GHOST Neumann 0 0 -1 1
+p 3 LEFT_GHOST Neumann 0 1 0 1
+p 4 RIGHT_GHOST Neumann 0 -1 0 1
+p 6 INLET Dirichlet 0
+p 7 OUTLET Dirichlet 0
