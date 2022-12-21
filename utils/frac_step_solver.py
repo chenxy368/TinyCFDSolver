@@ -1,9 +1,16 @@
 import numpy as np
+from utils.poisson_iterative_solver import PointJacobi, GaussSeidel, SOR
 
 class FracStepSolver():
-    def __init__(self, mu, rho, dt, dx, dy, u_shape, v_shape, p_shape, 
-                 u_boundaries, v_boundaries, p_boundaries, u_interior, v_interior, p_interior,
-                 u_exterior, v_exterior, p_exterior, step_visualization = None, final_visualization = None, tol = 0.1):
+    def __init__(self, mu: float, rho: float, dt: float, dx: float, dy: float, u_shape: tuple, v_shape: tuple, p_shape: tuple, 
+                 u_interior: list, v_interior: list, p_interior: list, u_exterior: list, v_exterior: list, p_exterior: list, 
+                 metrics = None, step_visualization = None, final_visualization = None, u_boundaries = [], v_boundaries = [], 
+                 p_boundaries = [], tol = 0.1, solver_ID = 0, wsor = 1.8):
+        assert len(u_shape) == 2 and len(v_shape) == 2 and len(p_shape) == 2 and callable(step_visualization) \
+            and step_visualization.__name__ == "<lambda>" and callable(final_visualization) \
+            and final_visualization.__name__ == "<lambda>" and callable(metrics) and metrics.__name__ == "<lambda>" \
+            and solver_ID < 3 and solver_ID >= 0
+        
         # define constants
         self.mu = mu
         self.rho = rho
@@ -30,9 +37,17 @@ class FracStepSolver():
         self.v_boundaries = v_boundaries
         self.p_boundaries = p_boundaries
         
-        # Tolerance of Poisson iterative solver
-        self.tol = tol
-        
+        # Poisson iterative solver
+        solver_ID = int(solver_ID)
+        if solver_ID == 0:
+            self.poisson_solver = PointJacobi(self.p_shape, self.p_interior, self.p_exterior, 
+                                              dx, dy, metrics, tol, self.p_boundaries)
+        elif solver_ID == 1:
+            self.poisson_solver = GaussSeidel(self.p_shape, self.p_interior, self.p_exterior, 
+                                              dx, dy, metrics, tol, self.p_boundaries)
+        else:
+            self.poisson_solver = SOR(self.p_shape, self.p_interior, self.p_exterior, 
+                                      dx, dy, metrics, tol, self.p_boundaries, wsor)
         # Post processor
         self.step_visualization = step_visualization
         self.final_visualization = final_visualization
@@ -99,8 +114,8 @@ class FracStepSolver():
             
             # call iterative solver
             print('iteration number: ', t)
-            p = self.poisson_iterative_solver(rhs_p)
-
+            p = self.poisson_solver.solver(rhs_p)
+            
             # Step 3: correct u_star and v_star
             u[self.u_interior] = u_star[self.u_interior] - self.dt / self.rho / self.dx * (p[(self.u_interior[0] + 1, self.u_interior[1])] - p[self.u_interior])
             v[self.v_interior] = v_star[self.v_interior] - self.dt / self.rho / self.dy * (p[(self.v_interior[0], self.v_interior[1] + 1)] - p[self.v_interior])
@@ -126,31 +141,3 @@ class FracStepSolver():
 
         if self.final_visualization is not None:
             self.final_visualization(velocity_list, pressure_list, self.dx, self.dy)
-   
-    def poisson_iterative_solver(self, f):
-        X = np.zeros([self.p_shape[0], self.p_shape[1]], dtype = float)
-        # initialize the errors
-        error = 1
-        iteration = 0
-
-        # iterate until the error is less than the tolerance or the maximum number of iterations is reached
-        # while error > tol and iter < maxiter:
-        while error > self.tol:
-            for boundary in self.p_boundaries:
-                X = boundary.process(X)
-        
-            X_ref = X.copy()
-            
-            # update the interior points
-            X[self.p_interior] = 1 / 4 * (X[self.p_interior[0] + 1, self.p_interior[1]] + X[self.p_interior[0] - 1, self.p_interior[1]] + X[self.p_interior[0], self.p_interior[1] + 1] + X[self.p_interior[0], self.p_interior[1] - 1]) - \
-                self.dx ** 2 / 4 * f[self.p_interior]
-
-            # calculate the error
-            error = np.max(np.abs(X[self.p_interior] - X_ref[self.p_interior]))
-        
-            # update the iteration
-            iteration += 1
-        
-        print('Number of iterations: ', iteration)
-
-        return X

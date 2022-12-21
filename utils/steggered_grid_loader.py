@@ -7,7 +7,13 @@ Created on Tue Dec 20 03:12:39 2022
 import numpy as np
 from utils.boundary import DirichletBoundary, NeumannBoundary, dirichlet_prototype, neumann_prototype
 
-
+class GridLoader2D():
+    def __init__(self, root: str):
+        self.root = root
+        '''
+        self.interior, self.exterior, \
+        self.u_boundaries, self.v_boundaries, self.psi_boundaries, self.\
+        self.u_shape, self.v_shape, self.p_shape = self.load_grid(root)'''
 
 class StaggeredGridLoader():
     def __init__(self, root: str):
