@@ -1,0 +1,33 @@
+INTERIOR 0
+wx_plus 3 BLEND LinearCombination 2 100 1 0 -100 0 0 0
+wx_plus 8 BLEND LinearCombination 2 100 1 0 -100 0 0 0
+wx_plus 7 BLEND LinearCombination 2 100 1 0 -100 0 0 0
+wx_plus 1 BLEND LinearCombination 4 33.3333333 -1 0 -100 0 0 100 1 0 -33.3333333 2 0 0
+wx_plus 2 BLEND LinearCombination 4 33.3333333 -1 0 -100 0 0 100 1 0 -33.3333333 2 0 0
+wx_plus 4 BLEND LinearCombination 4 33.3333333 -1 0 -100 0 0 100 1 0 -33.3333333 2 0 0
+wx_plus 5 BLEND LinearCombination 4 33.3333333 -1 0 -100 0 0 100 1 0 -33.3333333 2 0 0
+wx_plus 6 BLEND LinearCombination 4 33.3333333 -1 0 -100 0 0 100 1 0 -33.3333333 2 0 0
+wx_minus 1 BLEND LinearCombination 2 100 0 0 -100 -1 0 0
+wx_minus 5 BLEND LinearCombination 2 100 0 0 -100 -1 0 0
+wx_minus 6 BLEND LinearCombination 2 100 0 0 -100 -1 0 0
+wx_minus 2 BLEND LinearCombination 4 33.3333333 -2 0 -100 -1 0 100 0 0 -33.3333333 1 0 0
+wx_minus 3 BLEND LinearCombination 4 33.3333333 -2 0 -100 -1 0 100 0 0 -33.3333333 1 0 0
+wx_minus 4 BLEND LinearCombination 4 33.3333333 -2 0 -100 -1 0 100 0 0 -33.3333333 1 0 0
+wx_minus 7 BLEND LinearCombination 4 33.3333333 -2 0 -100 -1 0 100 0 0 -33.3333333 1 0 0
+wx_minus 8 BLEND LinearCombination 4 33.3333333 -2 0 -100 -1 0 100 0 0 -33.3333333 1 0 0
+wy_plus 2 BLEND LinearCombination 2 100 0 1 -100 0 0 0
+wy_plus 5 BLEND LinearCombination 2 100 0 1 -100 0 0 0
+wy_plus 8 BLEND LinearCombination 2 100 0 1 -100 0 0 0
+wy_plus 1 BLEND LinearCombination 4 33.3333333 0 -1 -100 0 0 100 0 1 -33.3333333 2 2 0
+wy_plus 3 BLEND LinearCombination 4 33.3333333 0 -1 -100 0 0 100 0 1 -33.3333333 0 2 0
+wy_plus 4 BLEND LinearCombination 4 33.3333333 0 -1 -100 0 0 100 0 1 -33.3333333 0 2 0
+wy_plus 6 BLEND LinearCombination 4 33.3333333 0 -1 -100 0 0 100 0 1 -33.3333333 0 2 0
+wy_plus 7 BLEND LinearCombination 4 33.3333333 0 -1 -100 0 0 100 0 1 -33.3333333 0 2 0
+wy_minus 4 BLEND LinearCombination 2 100 0 0 -100 0 -1 0
+wy_minus 6 BLEND LinearCombination 2 100 0 0 -100 0 -1 0
+wy_minus 7 BLEND LinearCombination 2 100 0 0 -100 0 -1 0
+wy_minus 1 BLEND LinearCombination 4 33.3333333 0 -2 -100 0 -1 100 0 0 -33.3333333 0 1 0
+wy_minus 2 BLEND LinearCombination 4 33.3333333 0 -2 -100 0 -1 100 0 0 -33.3333333 0 1 0
+wy_minus 3 BLEND LinearCombination 4 33.3333333 0 -2 -100 0 -1 100 0 0 -33.3333333 0 1 0
+wy_minus 5 BLEND LinearCombination 4 33.3333333 0 -2 -100 0 -1 100 0 0 -33.3333333 0 1 0
+wy_minus 8 BLEND LinearCombination 4 33.3333333 0 -2 -100 0 -1 100 0 0 -33.3333333 0 1 0

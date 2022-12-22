@@ -1,0 +1,14 @@
+INTERIOR -1
+u 0 FLOW Dirichlet 5.0
+u 1 WALL Dirichlet 0
+u 2 WALL Dirichlet 0
+v 0 FLOW Dirichlet 0
+v 1 WALL Dirichlet 0
+v 2 WALL Dirichlet 0
+psi 0 FLOW Dirichlet 0
+psi 1 WALL Dirichlet 0
+psi 2 WALL Dirichlet 0
+w_u_psi 0 FLOW TwoQuantityLinearCombination 2 -20000 0 -1 20000 0 0 1 -200 0 0 0
+w_u_psi 1 WALL TwoQuantityLinearCombination 2 20000 0 0 -20000 0 1 1 200 0 0 0
+w_v_psi 2 WALL TwoQuantityLinearCombination 2 -20000 1 0 20000 0 0 1 -200 0 0 0
+w_v_psi 3 WALL TwoQuantityLinearCombination 2 20000 0 0 -20000 -1 0 1 200 0 0 0

@@ -13,32 +13,45 @@ import matplotlib.pyplot as plt
 def plot_one_streamlines(u, v, dx, dy, title):
     assert u.shape == v.shape
     
-    x= np.linspace(0, dx, u.shape[1])
-    y = np.linspace(0, dy, u.shape[0])
+    x = np.linspace(0, u.shape[1] * dx, u.shape[1])
+    y = np.linspace(0, u.shape[0] * dy, u.shape[0])
     xx, yy = np.meshgrid(x,y)
 
     plt.streamplot(xx, yy, u, v, color=np.sqrt(u ** 2 + v ** 2), density = 1.5, linewidth = 1.5, cmap = 'jet')
-    plt.colorbar(label = 'velocity[m/s]')
     plt.xlabel('x/m', fontsize = 14)
     plt.ylabel('y/m', fontsize = 14)
 
     plt.title(title, fontsize = 14)
     plt.tick_params(labelsize=12)
-    plt.ylim([0,0.1])
-    plt.xlim([0,0.1])
+    plt.ylim([0,u.shape[0] * dy])
+    plt.xlim([0,u.shape[1] * dx])
     plt.show()
 
 def plot_one_contourf(array, dx, dy, title, colorbar_label, vmin, vmax):
-    X = np.linspace(0, dx, array.shape[1])
-    Y = np.linspace(0, dy, array.shape[0])
+    X = np.linspace(0, array.shape[1] * dx, array.shape[1])
+    Y = np.linspace(0, array.shape[0] * dy, array.shape[0])
+    xx, yy = np.meshgrid(X,Y)
     norm = colors.Normalize(vmin = vmin, vmax = vmax)
     im = cm.ScalarMappable(norm=norm, cmap='jet')
-    plt.contourf(X, Y, array, 20, cmap = 'jet', norm = norm)
+    plt.contourf(xx, yy, array, 20, cmap = 'jet', norm = norm)
     plt.colorbar(im, label = colorbar_label)
     plt.xlabel('x/m', fontsize = 14)
     plt.ylabel('y/m', fontsize = 14)
     plt.title(title)
     plt.show()
+
+def plot_one_contour(array, dx, dy, title):
+    X = np.linspace(0, array.shape[1] * dx, array.shape[1])
+    Y = np.linspace(0, array.shape[0] * dy, array.shape[0])
+    xx, yy = np.meshgrid(X,Y)   
+    plt.contour(xx, yy, array)
+    plt.xlabel('x [m]',fontsize = 14)
+    plt.ylabel('y [m]',fontsize = 14)
+    plt.title(title, fontsize = 14)
+    plt.tick_params(labelsize=12)
+    plt.ylim([0, array.shape[0] * dy])
+    plt.xlim([0, array.shape[1] * dx])
+    plt.show()      
 
 def animate(arrays, dx, dy, title, colorbar_label, vmin, vmax):
     norm = colors.Normalize(vmin = vmin, vmax = vmax)

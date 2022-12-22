@@ -13,6 +13,25 @@ def neumann_prototype(obj, domain, bias, offset, coefficient):
     obj[domain] = coefficient * obj[domain[0] + int(offset[0]), domain[1] + int(offset[1])] + bias
     return obj
     
+def linear_combination_prototype(obj, obj0, domain, bias, offsets0, coefficients0):   
+    obj[domain] = bias
+    item_num = len(offsets0)
+    for i in range(item_num):
+        obj[domain] += coefficients0[i] * obj0[domain[0] + int(offsets0[i][0]), domain[1] + int(offsets0[i][1])]
+    
+    return obj
+
+def two_quantity_linear_combination_prototype(obj, obj1, obj2, domain, bias, offsets1, coefficients1, offsets2, coefficients2):
+    obj[domain] = bias
+    item_num = len(offsets1)
+    for i in range(item_num):
+        obj[domain] += coefficients1[i] * obj1[domain[0] + int(offsets1[i][0]), domain[1] + int(offsets1[i][1])]
+    item_num = len(offsets2)
+    for i in range(item_num):
+        obj[domain] += coefficients2[i] * obj2[domain[0] + int(offsets2[i][0]), domain[1] + int(offsets2[i][1])]
+        
+    return obj
+
 class BoundaryCondition():
     def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, 
                  boundary_type: str, boundary_opt):
@@ -74,3 +93,32 @@ class NeumannBoundary(BoundaryCondition):
         
     def process(self, obj):
         return self.boundary_opt(obj, self.boundary_domain, self.bias, self.offset, self.coefficient)
+    
+class LinearCombinationCondition(BoundaryCondition):
+    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, 
+                 boundary_type: str, boundary_opt, bias: float, offsets: list, coefficients: list):
+        assert boundary_type == "LinearCombination" and boundary_opt == linear_combination_prototype
+        
+        super(LinearCombinationCondition, self).__init__(boundary_id, boundary_name, boundary_domain, boundary_type, boundary_opt)
+        self.bias = bias
+        self.offsets = offsets
+        self.coefficients = coefficients
+        
+    def process(self, obj, obj0):
+        return self.boundary_opt(obj, obj0, self.boundary_domain, self.bias, self.offsets, self.coefficients)
+    
+class TwoQuantityLinearCombinationCondition(BoundaryCondition):
+    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, 
+                 boundary_type: str, boundary_opt, bias: float, offsets1: list, coefficients1: list, 
+                 offsets2: list, coefficients2: list):
+        assert boundary_type == "TwoQuantityLinearCombination" and boundary_opt == two_quantity_linear_combination_prototype
+        
+        super(TwoQuantityLinearCombinationCondition, self).__init__(boundary_id, boundary_name, boundary_domain, boundary_type, boundary_opt)
+        self.bias = bias
+        self.offsets1 = offsets1
+        self.coefficients1 = coefficients1
+        self.offsets2 = offsets2
+        self.coefficients2 = coefficients2
+        
+    def process(self, obj, obj1, obj2):
+        return self.boundary_opt(obj, obj1, obj2, self.boundary_domain, self.bias, self.offsets1, self.coefficients1, self.offsets2, self.coefficients2)
