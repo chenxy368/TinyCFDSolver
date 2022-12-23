@@ -1,9 +1,9 @@
 import numpy as np
 
-from utils import FracStepSolver
-from utils import plot_one_contourf, plot_one_contour, plot_one_streamlines, animate
-from utils import StaggeredGridLoader, BlendSchemeGridLoader2D
-from utils import StreamFunctionVortex
+from methods import FracStepSolver, StreamFunctionVortex
+from utils import (plot_one_contourf, plot_one_contour, plot_one_streamlines, animate,
+                StaggeredGridLoader, BlendSchemeGridLoader2D)
+
 
 MAE = lambda array1, array2, domain: np.linalg.norm(array1[domain] - array2[domain])
 RANGE = lambda array1, array2, domain: np.max(np.abs(array1[domain] - array2[domain]))

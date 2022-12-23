@@ -1,5 +1,5 @@
 import numpy as np
-from utils.poisson_iterative_solver import PointJacobi, GaussSeidel, SOR
+from methods.poisson_iterative_solver import PointJacobi, GaussSeidel, SOR
 
 class FracStepSolver():
     def __init__(self, mu: float, rho: float, dt: float, dx: float, dy: float, u_shape: tuple, v_shape: tuple, p_shape: tuple, 

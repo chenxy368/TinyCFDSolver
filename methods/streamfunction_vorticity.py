@@ -5,7 +5,7 @@ Created on Wed Dec 21 04:24:08 2022
 @author: HP
 """
 import numpy as np
-from utils.poisson_iterative_solver import PointJacobi, GaussSeidel, SOR
+from methods.poisson_iterative_solver import PointJacobi, GaussSeidel, SOR
 
 class StreamFunctionVortex():
     def __init__(self, dx: float, dy: float, dt:float, nu: float, shape: tuple, interior: list, blend_interior: list, exterior: list, 
