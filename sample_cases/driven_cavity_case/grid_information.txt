@@ -1,14 +1,57 @@
-INTERIOR -1
-u 0 FLOW Dirichlet 5.0
-u 1 WALL Dirichlet 0
-u 2 WALL Dirichlet 0
-v 0 FLOW Dirichlet 0
-v 1 WALL Dirichlet 0
-v 2 WALL Dirichlet 0
-psi 0 FLOW Dirichlet 0
-psi 1 WALL Dirichlet 0
-psi 2 WALL Dirichlet 0
-w_u_psi 0 FLOW TwoQuantityLinearCombination 2 -20000 0 -1 20000 0 0 1 -200 0 0 0
-w_u_psi 1 WALL TwoQuantityLinearCombination 2 20000 0 0 -20000 0 1 1 200 0 0 0
-w_v_psi 2 WALL TwoQuantityLinearCombination 2 -20000 1 0 20000 0 0 1 -200 0 0 0
-w_v_psi 3 WALL TwoQuantityLinearCombination 2 20000 0 0 -20000 -1 0 1 200 0 0 0
+METHOD
+SFV 0.5 PointJacobi 0.0001
+PARAMETER
+dx 0.01
+dy 0.01
+dt 0.002
+dynamic_viscosity 0.01
+inflow_speed 5.0
+DOMAIN
+mesh -1
+blend_mesh 0
+BOUNDARY
+u 0 Flow_Dirichlet Const inflow_speed
+u 1 Wall_Dirichlet Const 0
+u 2 Wall_Dirichlet Const 0
+v 0 Flow_Dirichlet Const 0
+v 1 Wall_Dirichlet Const 0
+v 2 Wall_Dirichlet Const 0
+psi 0 Flow_Dirichlet Const 0
+psi 1 Wall_Dirichlet Const 0
+psi 2 Wall_Dirichlet Const 0
+w_u_psi 0 FLOW TwoQuantityLinearCombination 2 -2/dy/dy 0 -1 2/dy/dy 0 0 1 -2/dy 0 0 0
+w_u_psi 1 WALL TwoQuantityLinearCombination 2 2/dy/dy 0 0 -2/dy/dy 0 1 1 2/dy 0 0 0
+w_v_psi 2 WALL TwoQuantityLinearCombination 2 -2/dx/dx 1 0 2/dx/dx 0 0 1 -2/dx 0 0 0
+w_v_psi 3 WALL TwoQuantityLinearCombination 2 2/dx/dx 0 0 -2/dx/dx -1 0 1 2/dx 0 0 0
+wx_plus 3 BLEND LinearCombination 2 1/dx 1 0 -1/dx 0 0 0
+wx_plus 8 BLEND LinearCombination 2 1/dx 1 0 -1/dx 0 0 0
+wx_plus 7 BLEND LinearCombination 2 1/dx 1 0 -1/dx 0 0 0
+wx_plus 1 BLEND LinearCombination 4 1/3/dx -1 0 -1/dx 0 0 1/dx 1 0 -1/3/dx 2 0 0
+wx_plus 2 BLEND LinearCombination 4 1/3/dx -1 0 -1/dx 0 0 1/dx 1 0 -1/3/dx 2 0 0
+wx_plus 4 BLEND LinearCombination 4 1/3/dx -1 0 -1/dx 0 0 1/dx 1 0 -1/3/dx 2 0 0
+wx_plus 5 BLEND LinearCombination 4 1/3/dx -1 0 -1/dx 0 0 1/dx 1 0 -1/3/dx 2 0 0
+wx_plus 6 BLEND LinearCombination 4 1/3/dx -1 0 -1/dx 0 0 1/dx 1 0 -1/3/dx 2 0 0
+wx_minus 1 BLEND LinearCombination 2 1/dx 0 0 -1/dx -1 0 0
+wx_minus 5 BLEND LinearCombination 2 1/dx 0 0 -1/dx -1 0 0
+wx_minus 6 BLEND LinearCombination 2 1/dx 0 0 -1/dx -1 0 0
+wx_minus 2 BLEND LinearCombination 4 1/3/dx -2 0 -1/dx -1 0 1/dx 0 0 -1/3/dx 1 0 0
+wx_minus 3 BLEND LinearCombination 4 1/3/dx -2 0 -1/dx -1 0 1/dx 0 0 -1/3/dx 1 0 0
+wx_minus 4 BLEND LinearCombination 4 1/3/dx -2 0 -1/dx -1 0 1/dx 0 0 -1/3/dx 1 0 0
+wx_minus 7 BLEND LinearCombination 4 1/3/dx -2 0 -1/dx -1 0 1/dx 0 0 -1/3/dx 1 0 0
+wx_minus 8 BLEND LinearCombination 4 1/3/dx -2 0 -1/dx -1 0 1/dx 0 0 -1/3/dx 1 0 0
+wy_plus 2 BLEND LinearCombination 2 1/dy 0 1 -1/dy 0 0 0
+wy_plus 5 BLEND LinearCombination 2 1/dy 0 1 -1/dy 0 0 0
+wy_plus 8 BLEND LinearCombination 2 1/dy 0 1 -1/dy 0 0 0
+wy_plus 1 BLEND LinearCombination 4 1/3/dy 0 -1 -1/dy 0 0 1/dy 0 1 -1/3/dy 2 2 0
+wy_plus 3 BLEND LinearCombination 4 1/3/dy 0 -1 -1/dy 0 0 1/dy 0 1 -1/3/dy 0 2 0
+wy_plus 4 BLEND LinearCombination 4 1/3/dy 0 -1 -1/dy 0 0 1/dy 0 1 -1/3/dy 0 2 0
+wy_plus 6 BLEND LinearCombination 4 1/3/dy 0 -1 -1/dy 0 0 1/dy 0 1 -1/3/dy 0 2 0
+wy_plus 7 BLEND LinearCombination 4 1/3/dy 0 -1 -1/dy 0 0 1/dy 0 1 -1/3/dy 0 2 0
+wy_minus 4 BLEND LinearCombination 2 1/dy 0 0 -1/dy 0 -1 0
+wy_minus 6 BLEND LinearCombination 2 1/dy 0 0 -1/dy 0 -1 0
+wy_minus 7 BLEND LinearCombination 2 1/dy 0 0 -1/dy 0 -1 0
+wy_minus 1 BLEND LinearCombination 4 1/3/dy 0 -2 -1/dy 0 -1 1/dy 0 0 -1/3/dy 0 1 0
+wy_minus 2 BLEND LinearCombination 4 1/3/dy 0 -2 -1/dy 0 -1 1/dy 0 0 -1/3/dy 0 1 0
+wy_minus 3 BLEND LinearCombination 4 1/3/dy 0 -2 -1/dy 0 -1 1/dy 0 0 -1/3/dy 0 1 0
+wy_minus 5 BLEND LinearCombination 4 1/3/dy 0 -2 -1/dy 0 -1 1/dy 0 0 -1/3/dy 0 1 0
+wy_minus 8 BLEND LinearCombination 4 1/3/dy 0 -2 -1/dy 0 -1 1/dy 0 0 -1/3/dy 0 1 0

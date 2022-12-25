@@ -8,44 +8,58 @@ import numpy as np
 from methods.poisson_iterative_solver import PointJacobi, GaussSeidel, SOR
 
 class StreamFunctionVortex():
-    def __init__(self, dx: float, dy: float, dt:float, nu: float, shape: tuple, interior: list, blend_interior: list, exterior: list, 
-                 metrics = None, u_boundaries = [], v_boundaries = [], psi_boundaries = [], wu_boundaries = [], wv_boundaries = [],
-                 wx_plus_boundaries = [], wy_plus_boundaries = [], wx_minus_boundaries = [], wy_minus_boundaries = [], 
-                 step_visualization = None, final_visualization = None, blend_factor = 0.5, solver_ID = 0, tol = 0.1, wsor = 1.8):
-        self.dx = dx
-        self.dy = dy
-        self.dt = dt
-        self.nu = nu
-        self.blend_factor = blend_factor
-        self.shape = shape
-        self.interior = interior
-        self.exterior = exterior
-        self.blend_interior = blend_interior
+    def __init__(self, method_info, mesh_data, metrics = None, step_visualization = None, final_visualization = None):
+        self.shape = mesh_data[0]
         
-        self.u_boundaries = u_boundaries
-        self.v_boundaries = v_boundaries
-        self.psi_boundaries = psi_boundaries
-        self.wu_boundaries = wu_boundaries
-        self.wv_boundaries = wv_boundaries
-        self.wx_plus_boundaries = wx_plus_boundaries 
-        self.wy_plus_boundaries = wy_plus_boundaries 
-        self.wx_minus_boundaries = wx_minus_boundaries 
-        self.wy_minus_boundaries = wy_minus_boundaries
+        self.dx = self.read_input("dx", mesh_data[1])
+        self.dy = self.read_input("dy", mesh_data[1])
+        self.dt = self.read_input("dt", mesh_data[1])
+        self.nu = self.read_input("dynamic_viscosity", mesh_data[1])
         
+        self.interior = self.read_input("mesh", mesh_data[2])
+        self.exterior = self.read_input("mesh_exterior", mesh_data[2])
+        self.blend_interior = self.read_input("blend_mesh", mesh_data[2])
+
+        self.u_boundaries = self.read_input("u", mesh_data[3])
+        self.v_boundaries = self.read_input("v", mesh_data[3])
+        self.psi_boundaries = self.read_input("psi", mesh_data[3])
+        self.wu_boundaries = self.read_input("w_u_psi", mesh_data[3])
+        self.wv_boundaries = self.read_input("w_v_psi", mesh_data[3])
+        self.wx_plus_boundaries = self.read_input("wx_plus", mesh_data[3])
+        self.wy_plus_boundaries = self.read_input("wy_plus", mesh_data[3])
+        self.wx_minus_boundaries = self.read_input("wx_minus", mesh_data[3])
+        self.wy_minus_boundaries = self.read_input("wy_minus", mesh_data[3])
+        
+        self.method_name = method_info[0]
+        self.blend_factor = float(method_info[1])
         # Poisson iterative solver
-        solver_ID = int(solver_ID)
-        if solver_ID == 0:
-            self.poisson_solver = PointJacobi(self.shape, self.interior, self.exterior, 
-                                              dx, dy, metrics, tol, self.psi_boundaries)
-        elif solver_ID == 1:
-            self.poisson_solver = GaussSeidel(self.p_shape, self.p_interior, self.p_exterior, 
-                                              dx, dy, metrics, tol, self.psi_boundaries)
+        solver_name = method_info[2]
+        poisson_solver_domain_dict = {
+            "domain": self.interior,
+            "domain_exterior": self.exterior
+        }
+        poisson_solver_boundary_dict = {
+            "boundary": self.psi_boundaries
+        }
+        poisson_method_info = method_info[2:]
+
+        poisson_mesh_data = (mesh_data[0], mesh_data[1], poisson_solver_domain_dict, poisson_solver_boundary_dict)
+        if solver_name == "SOR":
+            self.poisson_solver = SOR(poisson_method_info, poisson_mesh_data, metrics)  
+        elif solver_name == "GaussSeidel":
+            self.poisson_solver = GaussSeidel(poisson_method_info, poisson_mesh_data, metrics)
         else:
-            self.poisson_solver = SOR(self.p_shape, self.p_interior, self.p_exterior, 
-                                      dx, dy, metrics, tol, self.psi_boundaries, wsor)        
+            self.poisson_solver = PointJacobi(poisson_method_info, poisson_mesh_data, metrics)
 
         self.step_visualization = step_visualization
         self.final_visualization = final_visualization
+    
+    def read_input(self, keyword: str, input_dict: dict):
+        if keyword in input_dict:
+            return input_dict[keyword]
+        else:
+            raise RuntimeError("MISSING INFORMATION")
+    
     def solve(self, num_timesteps, checkpoint_interval):
         velocity_list = []
         w_list =[]
@@ -67,8 +81,6 @@ class StreamFunctionVortex():
         # ** add your code here **
         w[self.interior] = (v[self.interior[0] + 1, self.interior[1]] - v[self.interior[0] - 1, self.interior[1]]) / self.dx / 2.0 \
                            - (u[self.interior[0], self.interior[1] + 1] - u[self.interior[0], self.interior[1] - 1]) / self.dy / 2.0
-        
-        
         
         # STEP 3: Compute psi on interior nodes
         # ------------------------------------------------------

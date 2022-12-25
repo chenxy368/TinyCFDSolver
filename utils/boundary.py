@@ -18,7 +18,9 @@ class BoundaryCondition():
         return obj
     
     def parse_parameters(self, boundary_parameters_list):
-        print("Warning: Do not call boundary condition base")
+        print("Warning: Do not call boundary condition base class")
+        for parameters in boundary_parameters_list:
+            print(parameters + " ")
     
     def set_domain(self, domain: list):
         self.domain = domain
@@ -38,9 +40,9 @@ class BoundaryCondition():
     def __str__(self):
         return "ID: " + str(self.id) + ", Name: " +  self.name + ", Type: " + self.type
     
-class DirichletBoundary(BoundaryCondition):
+class ConstCondition(BoundaryCondition):
     def __init__(self, boundary_id: int, boundary_name: str, boundary_domain: list, boundary_parameters_list:list):       
-        super(DirichletBoundary, self).__init__(boundary_id, boundary_name, boundary_domain,  "Dirichlet", boundary_parameters_list)
+        super(ConstCondition, self).__init__(boundary_id, boundary_name, boundary_domain,  "Const", boundary_parameters_list)
         self.bias = self.parse_parameters(boundary_parameters_list)
         
     def process(self, obj):
@@ -50,14 +52,17 @@ class DirichletBoundary(BoundaryCondition):
     def parse_parameters(self, boundary_parameters_list):
         assert len(boundary_parameters_list) == 1
         
-        return float(boundary_parameters_list[0])
+        return boundary_parameters_list[0]
         
     def set_bias(self, bias:float):
         self.bias = bias
 
-class NeumannBoundary(BoundaryCondition):
+    def __str__(self):
+        return super(ConstCondition, self).__str__() + ", Formula: y = " + str(self.bias) 
+
+class LinearCondition(BoundaryCondition):
     def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, boundary_parameters_list: list):
-        super(NeumannBoundary, self).__init__(boundary_id, boundary_name, boundary_domain, "Neumann", boundary_parameters_list)
+        super(LinearCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "Linear", boundary_parameters_list)
         self.bias, self.offset, self.coefficient = self.parse_parameters(boundary_parameters_list)
         
     def process(self, obj):
@@ -67,14 +72,27 @@ class NeumannBoundary(BoundaryCondition):
     def parse_parameters(self, boundary_parameters_list):
         assert len(boundary_parameters_list) == 4 
         
-        return float(boundary_parameters_list[0]), (int(boundary_parameters_list[1]), int(boundary_parameters_list[2])), \
-               float(boundary_parameters_list[3])
+        return boundary_parameters_list[3], (int(boundary_parameters_list[1]), int(boundary_parameters_list[2])), \
+               boundary_parameters_list[0]
     
     def set_bias(self, bias: float):
         self.bias = bias
         
     def set_coefficient(self, coefficient: float):
         self.coefficient = coefficient
+    
+    def __str__(self):
+        output_str = super(LinearCondition, self).__str__() + ", Formula: y[i, j] = " + str(self.coefficient) +  "·y[i"
+        if self.offset[0] >= 0:
+            output_str += "+"
+        output_str += str(self.offset[0]) + ", j"
+        if self.offset[1] >= 0:
+            output_str += "+"
+        output_str += str(self.offset[1]) + "]"
+        if self.bias >= 0:
+            output_str += "+"
+        output_str += str(self.bias)
+        return output_str
     
 class LinearCombinationCondition(BoundaryCondition):
     def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, boundary_parameters_list: list):     
@@ -95,16 +113,34 @@ class LinearCombinationCondition(BoundaryCondition):
         offsets = []
         coefficients = []
         for i in range(int(boundary_parameters_list[0])):
-            coefficients.append(float(boundary_parameters_list[i * 3 + 1]))
+            coefficients.append(boundary_parameters_list[i * 3 + 1])
             offsets.append((int(boundary_parameters_list[i * 3 + 2]), int(boundary_parameters_list[i * 3 + 3])))
                 
-        return float(boundary_parameters_list[len(boundary_parameters_list)-1]), offsets, coefficients
+        return boundary_parameters_list[len(boundary_parameters_list)-1], offsets, coefficients
     
     def set_bias(self, bias: float):
         self.bias = bias
         
     def set_coefficient(self, coefficient: list):
         self.coefficient = coefficient
+    
+    def __str__(self):
+        output_str = super(LinearCombinationCondition, self).__str__() + ", Formula: y[i, j] = "
+        for i in range(len(self.offsets)):
+            if i != 0 and self.coefficients[i] >= 0:
+                output_str += "+ "
+            output_str += str(self.coefficients[i]) + "·x" + str(i) + "[i"
+            if self.offsets[i][0] >= 0:
+                output_str += "+"
+            output_str += str(self.offsets[i][0]) + ", j"
+            if self.offsets[i][1] >= 0:
+                output_str += "+" 
+            output_str += str(self.offsets[i][1]) + "] "
+            
+        if self.bias >= 0:
+            output_str += "+" 
+        output_str += str(self.bias)
+        return  output_str
     
 class TwoQuantityLinearCombinationCondition(BoundaryCondition):
     def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, boundary_parameters_list: list):        
@@ -126,16 +162,16 @@ class TwoQuantityLinearCombinationCondition(BoundaryCondition):
         offsets1 = []
         coefficients1 = []
         for i in range(int(boundary_parameters_list[0])):
-            coefficients1.append(float(boundary_parameters_list[i * 3 + 1]))
+            coefficients1.append(boundary_parameters_list[i * 3 + 1])
             offsets1.append((int(boundary_parameters_list[i * 3 + 2]), int(boundary_parameters_list[i * 3 + 3])))
             
         offsets2 = []
         coefficients2 = []
         for i in range(int(boundary_parameters_list[3 * int(boundary_parameters_list[0]) + 1])):
-            coefficients2.append(float(boundary_parameters_list[i * 3 + 3 * int(boundary_parameters_list[0]) + 2]))
+            coefficients2.append(boundary_parameters_list[i * 3 + 3 * int(boundary_parameters_list[0]) + 2])
             offsets2.append((int(boundary_parameters_list[i * 3 + 3 * int(boundary_parameters_list[0]) + 3]), int(boundary_parameters_list[i * 3 + 3 * int(boundary_parameters_list[0]) + 4])))
 
-        return float(boundary_parameters_list[len(boundary_parameters_list)-1]), offsets1, coefficients1, offsets2, coefficients2
+        return boundary_parameters_list[len(boundary_parameters_list)-1], offsets1, coefficients1, offsets2, coefficients2
     
     def set_bias(self, bias:float):
         self.bias1 = bias
@@ -145,3 +181,33 @@ class TwoQuantityLinearCombinationCondition(BoundaryCondition):
             
     def set_coefficient2(self, coefficient: list):
         self.coefficient2 = coefficient
+    
+    def __str__(self):
+        output_str = super(TwoQuantityLinearCombinationCondition, self).__str__() + ", Formula: y[i, j] = "
+
+        for i in range(len(self.offsets1)):
+            if i != 0 and self.coefficients1[i] >= 0:
+                output_str += "+ "
+            output_str += str(self.coefficients1[i]) + "·x1" + str(i) + "[i"
+            if self.offsets1[i][0] >= 0:
+                output_str += "+"
+            output_str += str(self.offsets1[i][0]) + ", j"
+            if self.offsets1[i][1] >= 0:
+                output_str += "+" 
+            output_str += str(self.offsets1[i][1]) + "] "
+        
+        for i in range(len(self.offsets2)):
+            if self.coefficients2[i] >= 0:
+                output_str += "+ "
+            output_str += str(self.coefficients2[i]) + "·x1" + str(i) + "[i"
+            if self.offsets2[i][0] >= 0:
+                output_str += "+"
+            output_str += str(self.offsets2[i][0]) + ", j"
+            if self.offsets2[i][1] >= 0:
+                output_str += "+" 
+            output_str += str(self.offsets2[i][1]) + "] "
+        
+        if self.bias >= 0:
+            output_str += "+" 
+        output_str += str(self.bias)
+        return  output_str

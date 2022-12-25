@@ -1,23 +1,34 @@
-u -1 INTERIOR
-u 0 WALL Dirichlet 0
-u 5 BOUNDARY Dirichlet 0
-u 2 DOWN_GHOST Neumann 0 0 1 -1
-u 1 UP_GHOST Neumann 0 0 -1 -1
-u 6 INLET Dirichlet 0
-u 7 OUTLET Neumann 0 0 -1 1
-v -1 INTERIOR
-v 0 WALL Dirichlet 0
-v 5 BOUNDARY Dirichlet 0
-v 3 LEFT_GHOST Neumann 0 1 0 -1
-v 4 RIGHT_GHOST Neumann 0 -1 0 -1
-v 6 INLET Dirichlet 0.05
-v 7 OUTLET Neumann 0 0 -1 1
-p -1 INTERIOR
-p 0 WALL Dirichlet 0
-p 5 BOUNDARY Dirichlet 0
-p 2 DOWN_GHOST Neumann 0 0 1 1
-p 1 UP_GHOST Neumann 0 0 -1 1
-p 3 LEFT_GHOST Neumann 0 1 0 1
-p 4 RIGHT_GHOST Neumann 0 -1 0 1
-p 6 INLET Dirichlet 0
-p 7 OUTLET Dirichlet 0
+METHOD
+FracStep PointJacobi 0.9
+PARAMETER
+dx 0.1
+dy 0.1
+dt 0.001
+density 1000
+kinematic_viscosity 0.001
+inflow_speed 0.05
+DOMAIN
+u -1
+v -1
+p -1
+BOUNDARY
+u 0 Wall_Dirichlet Const 0
+u 5 Boundary_Dirichlet Const 0
+u 2 Down_Ghost_Neumann Linear -1 0 1 0
+u 1 Up_Ghost_Neumann Linear -1 0 -1 0
+u 6 Inlet_Dirichlet Const 0
+u 7 Outlet_Ghost_Neumann Linear 1 0 -1 0
+v 0 Wall_Dirichlet Const 0
+v 5 Boundary_Dirichlet Const 0
+v 3 Left_Ghost_Neumann Linear -1 1 0 0
+v 4 Right_Ghost_Neumann Linear -1 -1 0 0
+v 6 Inlet_Dirichlet Const inflow_speed
+v 7 Outlet_Ghost_Neumann Linear 1 0 -1 0
+p 0 Wall_Dirichlet Const 0
+p 5 Boundary_Dirichlet Const 0
+p 2 Down_Ghost_Neumann Linear 1 0 1 0
+p 1 Up_Ghost_Neumann Linear 1 0 -1 0
+p 3 Left_Ghost_Neumann Linear 1 1 0 0
+p 4 Right_Ghost_Neumann Linear 1 -1 0 0
+p 6 Inlet_Dirichlet Const 0
+p 7 Outlet_Dirichlet Const 0

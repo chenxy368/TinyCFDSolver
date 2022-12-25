@@ -2,55 +2,65 @@ import numpy as np
 from methods.poisson_iterative_solver import PointJacobi, GaussSeidel, SOR
 
 class FracStepSolver():
-    def __init__(self, mu: float, rho: float, dt: float, dx: float, dy: float, u_shape: tuple, v_shape: tuple, p_shape: tuple, 
-                 u_interior: list, v_interior: list, p_interior: list, u_exterior: list, v_exterior: list, p_exterior: list, 
-                 metrics = None, step_visualization = None, final_visualization = None, u_boundaries = [], v_boundaries = [], 
-                 p_boundaries = [], tol = 0.1, solver_ID = 0, wsor = 1.8):
-        assert len(u_shape) == 2 and len(v_shape) == 2 and len(p_shape) == 2 and callable(step_visualization) \
-            and step_visualization.__name__ == "<lambda>" and callable(final_visualization) \
-            and final_visualization.__name__ == "<lambda>" and callable(metrics) and metrics.__name__ == "<lambda>" \
-            and solver_ID < 3 and solver_ID >= 0
-        
-        # define constants
-        self.mu = mu
-        self.rho = rho
+    def __init__(self, method_info, mesh_data, metrics = None, step_visualization = None, final_visualization = None):
+        assert callable(step_visualization) and step_visualization.__name__ == "<lambda>" and callable(final_visualization) \
+            and final_visualization.__name__ == "<lambda>" and callable(metrics) and metrics.__name__ == "<lambda>" 
+         
+        # Domain information
+        self.u_shape = mesh_data[0][0]
+        self.v_shape = mesh_data[0][1]
+        self.p_shape = mesh_data[0][2]
 
         # Simulation parameters
-        self.dt = dt
-        self.dx = dx
-        self.dy = dy
-    
-        # Domain information
-        self.u_shape = u_shape
-        self.v_shape = v_shape
-        self.p_shape = p_shape
+        self.dt = self.read_input("dt", mesh_data[1])
+        self.dx = self.read_input("dx", mesh_data[1])
+        self.dy = self.read_input("dy", mesh_data[1])
         
-        self.u_interior = u_interior
-        self.v_interior = v_interior
-        self.p_interior = p_interior
-        self.u_exterior = u_exterior
-        self.v_exterior = v_exterior 
-        self.p_exterior = p_exterior 
+        # define constants
+        self.mu = self.read_input("kinematic_viscosity", mesh_data[1])
+        self.rho = self.read_input("density", mesh_data[1])
+
+        # Domain information
+        self.u_interior = self.read_input("u", mesh_data[2])
+        self.v_interior = self.read_input("v", mesh_data[2])
+        self.p_interior = self.read_input("p", mesh_data[2])
+        self.u_exterior = self.read_input("u_exterior", mesh_data[2])
+        self.v_exterior = self.read_input("v_exterior", mesh_data[2]) 
+        self.p_exterior = self.read_input("p_exterior", mesh_data[2])  
         
         # Boundary information
-        self.u_boundaries = u_boundaries
-        self.v_boundaries = v_boundaries
-        self.p_boundaries = p_boundaries
+        self.u_boundaries = self.read_input("u", mesh_data[3])
+        self.v_boundaries = self.read_input("v", mesh_data[3])
+        self.p_boundaries = self.read_input("p", mesh_data[3])
         
+        self.method_name = method_info[0]
         # Poisson iterative solver
-        solver_ID = int(solver_ID)
-        if solver_ID == 0:
-            self.poisson_solver = PointJacobi(self.p_shape, self.p_interior, self.p_exterior, 
-                                              dx, dy, metrics, tol, self.p_boundaries)
-        elif solver_ID == 1:
-            self.poisson_solver = GaussSeidel(self.p_shape, self.p_interior, self.p_exterior, 
-                                              dx, dy, metrics, tol, self.p_boundaries)
+        solver_name = method_info[1]
+        poisson_solver_domain_dict = {
+            "domain": self.p_interior,
+            "domain_exterior": self.p_exterior
+        }
+        poisson_solver_boundary_dict = {
+            "boundary": self.p_boundaries
+        }
+        poisson_method_info = method_info[1:]
+
+        poisson_mesh_data = (self.p_shape, mesh_data[1], poisson_solver_domain_dict, poisson_solver_boundary_dict)
+        if solver_name == "SOR":
+            self.poisson_solver = SOR(poisson_method_info, poisson_mesh_data, metrics)  
+        elif solver_name == "GaussSeidel":
+            self.poisson_solver = GaussSeidel(poisson_method_info, poisson_mesh_data, metrics)
         else:
-            self.poisson_solver = SOR(self.p_shape, self.p_interior, self.p_exterior, 
-                                      dx, dy, metrics, tol, self.p_boundaries, wsor)
+            self.poisson_solver = PointJacobi(poisson_method_info, poisson_mesh_data, metrics)
         # Post processor
         self.step_visualization = step_visualization
         self.final_visualization = final_visualization
+        
+    def read_input(self, keyword: str, input_dict: dict):
+        if keyword in input_dict:
+            return input_dict[keyword]
+        else:
+            raise RuntimeError("MISSING INFORMATION")
         
     def solve(self, num_timesteps, checkpoint_interval):
         # animation
@@ -119,7 +129,6 @@ class FracStepSolver():
             # Step 3: correct u_star and v_star
             u[self.u_interior] = u_star[self.u_interior] - self.dt / self.rho / self.dx * (p[(self.u_interior[0] + 1, self.u_interior[1])] - p[self.u_interior])
             v[self.v_interior] = v_star[self.v_interior] - self.dt / self.rho / self.dy * (p[(self.v_interior[0], self.v_interior[1] + 1)] - p[self.v_interior])
-
             if self.final_visualization is not None and (t + 1) % checkpoint_interval == 0:
                 u[self.u_exterior] = 0
                 v[self.v_exterior] = 0
