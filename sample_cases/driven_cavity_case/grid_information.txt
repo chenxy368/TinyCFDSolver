@@ -12,12 +12,15 @@ BOUNDARY
 u 0 Flow_Dirichlet Const inflow_speed
 u 1 Wall_Dirichlet Const 0
 u 2 Wall_Dirichlet Const 0
+u 3 Wall_Dirichlet Const 0
 v 0 Flow_Dirichlet Const 0
 v 1 Wall_Dirichlet Const 0
 v 2 Wall_Dirichlet Const 0
+v 3 Wall_Dirichlet Const 0
 psi 0 Flow_Dirichlet Const 0
 psi 1 Wall_Dirichlet Const 0
 psi 2 Wall_Dirichlet Const 0
+psi 3 Wall_Dirichlet Const 0
 w_u_psi 0 FLOW NQuantityLinearCombination 2 2 2/dy/dy -1 0 -1 1 0 0 1 -2/dy 1 0 0 0
 w_u_psi 1 WALL NQuantityLinearCombination 2 2 2/dy/dy 1 0 0 -1 0 1 1 2/dy 1 0 0 0
 w_v_psi 2 WALL NQuantityLinearCombination 2 2 2/dx/dx -1 1 0 1 0 0 1 2/dx 1 0 0 0

@@ -169,7 +169,7 @@ class NQuantityLinearCombinationCondition(BoundaryCondition):
         super(NQuantityLinearCombinationCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "NQuantityLinearCombination", boundary_parameters_list)
         self.bias, self.quant_coefficients, self.offsets, self.coefficients = self.parse_parameters(boundary_parameters_list)
         
-    def process(self, obj, objs):
+    def process(self, obj, objs: tuple):
         obj[self.domain] = self.bias
         quant_num = len(self.offsets)
         for i in range(quant_num):
@@ -214,9 +214,10 @@ class NQuantityLinearCombinationCondition(BoundaryCondition):
     @staticmethod
     def helper(self):
         format_str = "NQuantityLinearCombinationCondition format: Group ID Name LinearCombination #Quantity #Term \
-                    Quantity0_Term0_C0 Quantity0_Term0_O0 Quantity0_Term0_O1 ... Quantity1_Term0_C0 ... \
+                    Quandtity0_C Quantity0_Term0_C Quantity0_Term0_O0 Quantity0_Term0_O1 ... Quantity1_Term0_C ... \
                     QuantityN_TermN_O1 Bias"
-        formula_str = "y[i, j] = C000 * x00[i+O000, j+O001] + ... + C100 * x1[i+1O10, j+O111] + ... + Bias"
+        formula_str = "y[i, j] = C0 * (C00 * x00[i+O000, j+O001] + ... +) + ... (... + Cnm * xnm[i+Onm0, j+Onm1] + ...) \
+                        + ... + Bias"
         return format_str, formula_str
     
     def __str__(self):
@@ -242,3 +243,31 @@ class NQuantityLinearCombinationCondition(BoundaryCondition):
             output_str += "+" 
         output_str += str(self.bias)
         return  output_str
+    
+class LinearSpacialCondition(BoundaryCondition):
+    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, boundary_parameters_list: list):        
+        super(LinearSpacialCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "LinearSpacial", boundary_parameters_list)
+        self.bias, self.coefficients = self.parse_parameters(boundary_parameters_list)
+        
+    def process(self, obj):
+        obj[self.domain] = self.coefficients[0] * self.domain[0] + self.coefficients[1] * self.domain[1] + self.bias
+        return obj
+    
+    def parse_parameters(self, boundary_parameters_list):
+        return boundary_parameters_list[2], (boundary_parameters_list[0], boundary_parameters_list[1])
+    
+    def set_bias(self, bias:float):
+        self.bias = bias
+        
+    def set_coefficient(self, coefficient: tuple):
+        self.coefficients = coefficient
+     
+    @staticmethod
+    def helper(self):
+        format_str = "LinearSpacialCondition format: Group ID Name LinearCombination C0 C1 bias"
+        formula_str = "y[i, j] = C0 * i + C1 * j + Bias"
+        return format_str, formula_str
+    
+    def __str__(self):
+        return super(LinearSpacialCondition, self).__str__() + \
+            ", Formula: y[i, j] = " + str(self.coefficients[0]) + "* i + " + str(self.coefficients[1]) + "* j + " + str(self.bias)

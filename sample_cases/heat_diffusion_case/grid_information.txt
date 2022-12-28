@@ -1,0 +1,12 @@
+METHOD
+PoissonIterative SOR 0.00001 1.952 
+PARAMETER
+dx 0.2
+dy 0.1
+DOMAIN
+mesh -1
+BOUNDARY
+X 0 Insulated_Neuuman Linear 1 0 -1 0
+X 1 Zero_Const Const 0
+X 2 Y_Const LinearSpacial 0 dy 0
+X 3 Insulated_Neuuman Linear 1 0 1 0

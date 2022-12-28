@@ -1,6 +1,6 @@
 import numpy as np
 
-from methods import FracStep, StreamFunctionVorticity
+from methods import FracStep, StreamFunctionVorticity, PoissonIterative
 from utils import (plot_one_contourf, plot_one_contour, plot_one_streamlines, animate)
 
 
@@ -22,11 +22,15 @@ def main(method):
                                           plot_one_streamlines(u.transpose(), v.transpose(), dx, dy, 'Streamlines at ' + str(round((t + 1) * dt, 3)) + 's'))
 
         animator = lambda velocity, w, dx, dy: (animate(velocity, dx, dy, "velocity magnitude", "velocity[m/s]", 0.0, 6.0), 
-                                                plot_one_contour((np.transpose(w)), dx, dy, "vorticity at final"))
+                                                plot_one_contour((np.transpose(w[len(w) - 1])), dx, dy, "vorticity at final"))
 
-        method = StreamFunctionVorticity("sample_cases/driven_cavity_case", MAE, None, animator)
-        method.solve(int(3.0/0.002), 10)
+        method = StreamFunctionVorticity("sample_cases/driven_cavity_case", MAE, ploter, animator)
+        method.solve(int(0.2/0.002), 10)
+    elif method == "PoissonIterative":
+        ploter = lambda X, dx, dy: (plot_one_contourf(X.transpose(), dx, dy, "temperature", "temperature[◦C]", 0.0, 1.0))
+        method = PoissonIterative("sample_cases/heat_diffusion_case", MAE, ploter)
+        method.solve(0)
         
         
 if __name__ == "__main__":
-    main("SFV")
+    main("Frac_Step")

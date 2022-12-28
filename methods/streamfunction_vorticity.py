@@ -4,6 +4,7 @@ Created on Wed Dec 21 04:24:08 2022
 
 @author: HP
 """
+import numpy as np
 from solvers.poisson_iterative_solver import PointJacobiSolver, GaussSeidelSolver, SORSolver
 from solvers.streamfunction_vorticity_solver import StreamFunctionVorticitySolver
 from utils.grid_loader import BlendSFVGridLoader2D
@@ -18,16 +19,18 @@ class StreamFunctionVorticity():
             "mesh": "mesh.csv",
         }
         mesh_boundary_dict ={
-            "mesh": ["u", "v", "psi", "w_v_psi", "w_u_psi"],
+            "mesh": ["u", "v", "psi", "w_v_psi", "w_u_psi", "psi_v", "w_u_v_psi"],
         }
 
         method_info, mesh_data = loader.load_grid(domain_dict, mesh_boundary_dict, "mesh")
 
-        self.u_boundaries = mesh_data[3]["u"]
-        self.v_boundaries = mesh_data[3]["v"]
-        self.psi_boundaries = mesh_data[3]["psi"]
-        self.wu_boundaries = mesh_data[3]["w_u_psi"]
-        self.wv_boundaries = mesh_data[3]["w_v_psi"]
+        self.u_boundaries = self.check_boundary("u", mesh_data[3])
+        self.v_boundaries = self.check_boundary("v", mesh_data[3])
+        self.psi_boundaries = self.check_boundary("psi", mesh_data[3])
+        self.psiv_boundaries = self.check_boundary("psi_v", mesh_data[3])
+        self.wu_boundaries = self.check_boundary("w_u_psi", mesh_data[3])
+        self.wv_boundaries = self.check_boundary("w_v_psi", mesh_data[3])
+        self.wuv_boundaries = self.check_boundary("w_u_v_psi", mesh_data[3])
         
         self.method_name = method_info[0]
         # Poisson iterative solver
@@ -57,6 +60,14 @@ class StreamFunctionVorticity():
                                       self.w_boundary_process),
                                      poisson_solver, float(method_info[1]),self.extra_computing, step_visualization, final_visualization)
     
+        self.u = np.zeros([mesh_data[0]["mesh"][0], mesh_data[0]["mesh"][1]], dtype = float)
+        self.v = np.zeros([mesh_data[0]["mesh"][0], mesh_data[0]["mesh"][1]], dtype = float)
+
+    def check_boundary(self, keyword: str, boundaries_dict: dict):
+        if keyword in boundaries_dict:
+            return boundaries_dict[keyword]
+        else:
+            return []
 
     def solve(self, num_timesteps, checkpoint_interval):
         return self.solver.solve(num_timesteps, checkpoint_interval)
@@ -64,16 +75,21 @@ class StreamFunctionVorticity():
     def u_boundary_process(self, u, v, psi, w, t):
         for boundary in self.u_boundaries:
             u = boundary.process(u)
+        self.u[...] = u[...]
         return u
     
     def v_boundary_process(self, u, v, psi, w, t):
         for boundary in self.v_boundaries:
             v = boundary.process(v)
+        self.v[...] = v[...]
+
         return v
     
     def psi_boundary_process_possion_iterative(self, psi):
         for boundary in self.psi_boundaries:
             psi = boundary.process(psi)
+        for boundary in self.psiv_boundaries:
+            psi = boundary.process(psi, (psi, self.v))
         return psi
     
     def psi_boundary_process_frac_step(self, u, v, psi, w, t):
@@ -84,6 +100,8 @@ class StreamFunctionVorticity():
             w = boundary.process(w, (psi, u))
         for boundary in self.wv_boundaries:
             w = boundary.process(w, (psi, v))
+        for boundary in self.wuv_boundaries:
+            w = boundary.process(w, (psi, v, u))
         
         return w
 

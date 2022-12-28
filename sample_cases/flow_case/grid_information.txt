@@ -5,53 +5,41 @@ dx 0.01
 dy 0.01
 dt 0.002
 dynamic_viscosity 0.01
-inflow_speed 5.0
+inflow_speed1 5.0
+inflow_speed2 1.2
+stream_bound_const 0.12
 DOMAIN
 mesh -1
-blend_mesh 0
 BOUNDARY
-u 0 FLOW Dirichlet inflow_speed
-u 1 WALL Dirichlet 0
-u 2 WALL Dirichlet 0
-v 0 FLOW Dirichlet 0
-v 1 WALL Dirichlet 0
-v 2 WALL Dirichlet 0
-psi 0 FLOW Dirichlet 0
-psi 1 WALL Dirichlet 0
-psi 2 WALL Dirichlet 0
-w_u_psi 0 FLOW TwoQuantityLinearCombination 2 -20000 0 -1 20000 0 0 1 -200 0 0 0
-w_u_psi 1 WALL TwoQuantityLinearCombination 2 20000 0 0 -20000 0 1 1 200 0 0 0
-w_v_psi 2 WALL TwoQuantityLinearCombination 2 -20000 1 0 20000 0 0 1 -200 0 0 0
-w_v_psi 3 WALL TwoQuantityLinearCombination 2 20000 0 0 -20000 -1 0 1 200 0 0 0
-wx_plus 3 BLEND LinearCombination 2 100 1 0 -100 0 0 0
-wx_plus 8 BLEND LinearCombination 2 100 1 0 -100 0 0 0
-wx_plus 7 BLEND LinearCombination 2 100 1 0 -100 0 0 0
-wx_plus 1 BLEND LinearCombination 4 33.3333333 -1 0 -100 0 0 100 1 0 -33.3333333 2 0 0
-wx_plus 2 BLEND LinearCombination 4 33.3333333 -1 0 -100 0 0 100 1 0 -33.3333333 2 0 0
-wx_plus 4 BLEND LinearCombination 4 33.3333333 -1 0 -100 0 0 100 1 0 -33.3333333 2 0 0
-wx_plus 5 BLEND LinearCombination 4 33.3333333 -1 0 -100 0 0 100 1 0 -33.3333333 2 0 0
-wx_plus 6 BLEND LinearCombination 4 33.3333333 -1 0 -100 0 0 100 1 0 -33.3333333 2 0 0
-wx_minus 1 BLEND LinearCombination 2 100 0 0 -100 -1 0 0
-wx_minus 5 BLEND LinearCombination 2 100 0 0 -100 -1 0 0
-wx_minus 6 BLEND LinearCombination 2 100 0 0 -100 -1 0 0
-wx_minus 2 BLEND LinearCombination 4 33.3333333 -2 0 -100 -1 0 100 0 0 -33.3333333 1 0 0
-wx_minus 3 BLEND LinearCombination 4 33.3333333 -2 0 -100 -1 0 100 0 0 -33.3333333 1 0 0
-wx_minus 4 BLEND LinearCombination 4 33.3333333 -2 0 -100 -1 0 100 0 0 -33.3333333 1 0 0
-wx_minus 7 BLEND LinearCombination 4 33.3333333 -2 0 -100 -1 0 100 0 0 -33.3333333 1 0 0
-wx_minus 8 BLEND LinearCombination 4 33.3333333 -2 0 -100 -1 0 100 0 0 -33.3333333 1 0 0
-wy_plus 2 BLEND LinearCombination 2 100 0 1 -100 0 0 0
-wy_plus 5 BLEND LinearCombination 2 100 0 1 -100 0 0 0
-wy_plus 8 BLEND LinearCombination 2 100 0 1 -100 0 0 0
-wy_plus 1 BLEND LinearCombination 4 33.3333333 0 -1 -100 0 0 100 0 1 -33.3333333 2 2 0
-wy_plus 3 BLEND LinearCombination 4 33.3333333 0 -1 -100 0 0 100 0 1 -33.3333333 0 2 0
-wy_plus 4 BLEND LinearCombination 4 33.3333333 0 -1 -100 0 0 100 0 1 -33.3333333 0 2 0
-wy_plus 6 BLEND LinearCombination 4 33.3333333 0 -1 -100 0 0 100 0 1 -33.3333333 0 2 0
-wy_plus 7 BLEND LinearCombination 4 33.3333333 0 -1 -100 0 0 100 0 1 -33.3333333 0 2 0
-wy_minus 4 BLEND LinearCombination 2 100 0 0 -100 0 -1 0
-wy_minus 6 BLEND LinearCombination 2 100 0 0 -100 0 -1 0
-wy_minus 7 BLEND LinearCombination 2 100 0 0 -100 0 -1 0
-wy_minus 1 BLEND LinearCombination 4 33.3333333 0 -2 -100 0 -1 100 0 0 -33.3333333 0 1 0
-wy_minus 2 BLEND LinearCombination 4 33.3333333 0 -2 -100 0 -1 100 0 0 -33.3333333 0 1 0
-wy_minus 3 BLEND LinearCombination 4 33.3333333 0 -2 -100 0 -1 100 0 0 -33.3333333 0 1 0
-wy_minus 5 BLEND LinearCombination 4 33.3333333 0 -2 -100 0 -1 100 0 0 -33.3333333 0 1 0
-wy_minus 8 BLEND LinearCombination 4 33.3333333 0 -2 -100 0 -1 100 0 0 -33.3333333 0 1 0
+u 0 Flow_Dirichlet Const inflow_speed1
+u 1 Wall_Dirichlet Const 0
+u 2 Wall_Dirichlet Const 0
+u 3 Wall_Dirichlet Const 0
+u 4 Wall_Dirichlet Const inflow_speed2
+u 5 Wall_Dirichlet Const inflow_speed2
+u 6 Wall_Dirichlet Const 0
+u 7 Wall_Dirichlet Const 0
+v 0 Flow_Dirichlet Const 0
+v 1 Wall_Dirichlet Const 0
+v 2 Wall_Dirichlet Const 0
+v 3 Wall_Dirichlet Const 0
+v 4 Wall_Dirichlet Const 0
+v 5 Wall_Dirichlet Const 0
+v 6 Wall_Dirichlet Const 0
+v 7 Wall_Dirichlet Const 0
+psi 0 Flow_Dirichlet Const stream_bound_const
+psi 1 Wall_Dirichlet Const 0
+psi 2 Wall_Dirichlet Const 0
+psi 3 Wall_Dirichlet Const 0
+psi_v 4 Wall_Two_Quant_Linear NQuantityLinearCombination 2 2 1/3 4 1 0 -1 2 0 1 1/3 2*dx 0 0 0
+psi_v 5 Wall_Two_Quant_Linear NQuantityLinearCombination 2 2 1/3 -1 -2 0 4 -1 0 1 1/3 2*dx 0 0 0
+psi 6 Wall_Dirichlet Const stream_bound_const
+psi 7 Wall_Dirichlet Const stream_bound_const
+w_u_psi 0 FLOW NQuantityLinearCombination 2 2 2/dy/dy -1 0 -1 1 0 0 1 -2/dy 1 0 0 0
+w_u_psi 1 WALL NQuantityLinearCombination 2 2 2/dy/dy 1 0 0 -1 0 1 1 2/dy 1 0 0 0
+w_v_psi 2 WALL NQuantityLinearCombination 2 2 2/dx/dx -1 1 0 1 0 0 1 2/dx 1 0 0 0
+w_v_psi 3 WALL NQuantityLinearCombination 2 2 2/dx/dx 1 0 0 -1 -1 0 1 -2/dx 1 0 0 0
+w_u_v_psi 4 WALL NQuantityLinearCombination 3 2 2/dx/dx -1 1 0 1 0 0 1 2/dx 1 0 0 2 -1/2/dy 1 0 1 -1 0 -1 0
+w_u_v_psi 5 WALL NQuantityLinearCombination 3 2 2/dx/dx 1 0 0 -1 -1 0 1 -2/dx 1 0 0 2 -1/2/dy 1 0 1 -1 0 -1 0
+w_v_psi 6 WALL NQuantityLinearCombination 2 2 2/dx/dx -1 1 0 1 0 0 1 2/dx 1 0 0 0
+w_v_psi 7 WALL NQuantityLinearCombination 2 2 2/dx/dx 1 0 0 -1 -1 0 1 -2/dx 1 0 0 0

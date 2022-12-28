@@ -58,7 +58,7 @@ class StreamFunctionVorticitySolver():
         # ------------------------------------------------------
         # call iterative solver
         print('iteration number: ', 0)
-        psi = self.poisson_solver.solver(-w) 
+        psi = self.poisson_solver.solve(-w) 
         
         # STEP 4: Compute BCs for w
         # ------------------------------------------------------
@@ -109,7 +109,7 @@ class StreamFunctionVorticitySolver():
             w[self.interior] = next_w[self.interior]
 
             print('iteration number: ', t)
-            psi = self.poisson_solver.solver(-w) 
+            psi = self.poisson_solver.solve(-w) 
 
             w = self.w_boundary_process(u, v, psi, w, t)
             

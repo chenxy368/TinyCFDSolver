@@ -7,12 +7,14 @@ Created on Tue Dec 20 03:12:39 2022
 import numpy as np
 from utils.boundary import ConstCondition, LinearCondition, \
                            LinearCombinationCondition, \
-                           NQuantityLinearCombinationCondition
+                           NQuantityLinearCombinationCondition, \
+                           LinearSpacialCondition
 
 boundary_classes = {"Const": ConstCondition,
                     "Linear": LinearCondition, 
                     "LinearCombination": LinearCombinationCondition, 
-                    "NQuantityLinearCombination": NQuantityLinearCombinationCondition}
+                    "NQuantityLinearCombination": NQuantityLinearCombinationCondition,
+                    "LinearSpacial": LinearSpacialCondition}
 
 
 class GridLoader():

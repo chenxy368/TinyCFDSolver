@@ -99,7 +99,7 @@ class FracStepSolver():
             
             # call iterative solver
             print('iteration number: ', t)
-            p = self.poisson_solver.solver(rhs_p)
+            p = self.poisson_solver.solve(rhs_p)
             
             # Step 3: correct u_star and v_star
             u[self.u_interior] = u_star[self.u_interior] - self.dt / self.rho / self.dx * (p[(self.u_interior[0] + 1, self.u_interior[1])] - p[self.u_interior])
