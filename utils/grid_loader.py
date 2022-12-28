@@ -7,12 +7,12 @@ Created on Tue Dec 20 03:12:39 2022
 import numpy as np
 from utils.boundary import ConstCondition, LinearCondition, \
                            LinearCombinationCondition, \
-                           TwoQuantityLinearCombinationCondition
+                           NQuantityLinearCombinationCondition
 
 boundary_classes = {"Const": ConstCondition,
                     "Linear": LinearCondition, 
                     "LinearCombination": LinearCombinationCondition, 
-                    "TwoQuantityLinearCombination": TwoQuantityLinearCombinationCondition}
+                    "NQuantityLinearCombination": NQuantityLinearCombinationCondition}
 
 
 class GridLoader():
@@ -105,92 +105,95 @@ class GridLoader():
         print(new_boundary)
         
         return new_boundary
-
-class BlendSchemeGridLoader2D(GridLoader):
-    def __init__(self, root: str):
-        super(BlendSchemeGridLoader2D, self).__init__(root)
+    
+    def load_grid(self, domain_dict: dict, mesh_boundary_dict: dict):
+        for key in domain_dict:
+            domain_dict[key] = np.flipud(np.loadtxt(self.root + "/" + domain_dict[key], delimiter=",", dtype = int)).transpose()
         
-    def load_grid(self):
-        mesh = np.flipud(np.loadtxt(self.root + "/mesh.csv", delimiter=",", dtype = int)).transpose()
-        blend_mesh = np.flipud(np.loadtxt(self.root + "/blend_scheme_mesh.csv", delimiter=",", dtype = int)).transpose()
+        mesh_dict = {}
+        boundaries_dict ={}
+        for key in mesh_boundary_dict:
+            boundaries_list = mesh_boundary_dict[key]
+            for boundary in boundaries_list:
+                mesh_dict[boundary] = domain_dict[key]
+                boundaries_dict[boundary] = []
         
-        domain_dict = {
-            "mesh": -1,
-            "blend_mesh": -1
-        }
-        mesh_dict = {
-            "u": mesh, 
-            "v": mesh,
-            "psi": mesh,
-            "w_v_psi": mesh,
-            "w_u_psi": mesh,
-            "wx_plus": blend_mesh, 
-            "wy_plus": blend_mesh,
-            "wx_minus": blend_mesh,
-            "wy_minus": blend_mesh
-        }
+        shape_dict = {}
+        interior_ID_dict = {}
+        for key in domain_dict:
+            shape_dict[key] = domain_dict[key].shape
+            interior_ID_dict[key] = -1
         
-        boundaries_dict = {
-            "u": [], 
-            "v": [],
-            "psi": [],
-            "w_v_psi": [],
-            "w_u_psi": [],
-            "wx_plus": [], 
-            "wy_plus": [],
-            "wx_minus": [],
-            "wy_minus": []
-        }
-        
-        method_info, parameters_dict, domain_dict, boundaries_dict = self.parse_grid_info("grid_information.txt", domain_dict, boundaries_dict, mesh_dict)
-        
-        domain_dict["mesh_exterior"] = np.where(mesh != domain_dict["mesh"]) 
-        domain_dict["mesh"] = np.where(mesh == domain_dict["mesh"]) 
-        domain_dict["blend_mesh"] = np.where(blend_mesh == domain_dict["blend_mesh"])
+        method_info, parameters_dict, interior_ID_dict, boundaries_dict = self.parse_grid_info("grid_information.txt", interior_ID_dict, boundaries_dict, mesh_dict)
         
         for key in parameters_dict:
             parameters_dict[key] = float(parameters_dict[key])
         
-        return method_info, (mesh.shape, parameters_dict, domain_dict, boundaries_dict)
-    
-class StaggeredGridLoader(GridLoader):
-    def __init__(self, root: str):
-        super(StaggeredGridLoader, self).__init__(root)
+        for key in interior_ID_dict:
+            domain_dict[key + "_exterior"] = np.where(domain_dict[key] != interior_ID_dict[key])
+            domain_dict[key] = np.where(domain_dict[key] == interior_ID_dict[key])
         
-    def load_grid(self):
-        u_mesh = np.flipud(np.loadtxt(self.root + "/u_mesh.csv", delimiter=",", dtype = int)).transpose()
-        v_mesh = np.flipud(np.loadtxt(self.root + "/v_mesh.csv", delimiter=",", dtype = int)).transpose()
-        p_mesh = np.flipud(np.loadtxt(self.root + "/p_mesh.csv", delimiter=",", dtype = int)).transpose()
-        
-        domain_dict = {
-            "u": -1,
-            "v": -1,
-            "p": -1
-        }
-        boundaries_dict ={
-            "u": [],
-            "v": [],
-            "p": []
-        }
-        mesh_dict = {
-            "u": u_mesh,
-            "v": v_mesh,
-            "p": p_mesh
-        }
+        return method_info, (shape_dict, parameters_dict, domain_dict, boundaries_dict)
 
-        method_info, parameters_dict, domain_dict, boundaries_dict = self.parse_grid_info("grid_information.txt", domain_dict, boundaries_dict, mesh_dict)
+class BlendSFVGridLoader2D(GridLoader):
+    def __init__(self, root: str):
+        super(BlendSFVGridLoader2D, self).__init__(root)
         
-        domain_dict["u_exterior"] = np.where(u_mesh != domain_dict["u"]) 
-        domain_dict["v_exterior"] = np.where(v_mesh != domain_dict["v"])
-        domain_dict["p_exterior"] = np.where(p_mesh != domain_dict["p"]) 
-        domain_dict["u"] = np.where(u_mesh == domain_dict["u"]) 
-        domain_dict["v"] = np.where(v_mesh == domain_dict["v"])
-        domain_dict["p"] = np.where(p_mesh == domain_dict["p"]) 
-      
+    def load_grid(self, domain_dict: dict, mesh_boundary_dict: dict, base_mesh_keyword: str):
+        base_mesh = np.flipud(np.loadtxt(self.root + "/" + domain_dict[base_mesh_keyword], delimiter=",", dtype = int)).transpose()
+        for key in domain_dict:
+            domain_dict[key] = np.flipud(np.loadtxt(self.root + "/" + domain_dict[key], delimiter=",", dtype = int)).transpose()
+        
+        mesh_dict = {}
+        boundaries_dict ={}
+        for key in mesh_boundary_dict:
+            boundaries_list = mesh_boundary_dict[key]
+            for boundary in boundaries_list:
+                mesh_dict[boundary] = domain_dict[key]
+                boundaries_dict[boundary] = []
+        
+        shape_dict = {}
+        interior_ID_dict = {}
+        for key in domain_dict:
+            shape_dict[key] = domain_dict[key].shape
+            interior_ID_dict[key] = -1
+        
+        method_info, parameters_dict, interior_ID_dict, boundaries_dict = self.parse_grid_info("grid_information.txt", interior_ID_dict, boundaries_dict, mesh_dict)
+        base_mesh_id = interior_ID_dict[base_mesh_keyword]
         for key in parameters_dict:
-            parameters_dict[key] = float(parameters_dict[key])  
-      
-        return method_info, ((u_mesh.shape, v_mesh.shape, p_mesh.shape), parameters_dict, domain_dict, boundaries_dict)
-               
-    
-   
+            parameters_dict[key] = float(parameters_dict[key])
+        
+        for key in interior_ID_dict:
+            domain_dict[key + "_exterior"] = np.where(domain_dict[key] != interior_ID_dict[key])
+            domain_dict[key] = np.where(domain_dict[key] == interior_ID_dict[key])
+        
+        base_mesh_out_id = base_mesh_id - 1
+        base_exterior = np.where(base_mesh != base_mesh_id)
+        base_mesh[base_exterior] = base_mesh_out_id
+        
+        wx_minus_mesh = np.zeros_like(base_mesh)
+        wx_plus_mesh = np.zeros_like(base_mesh)
+        wy_minus_mesh = np.zeros_like(base_mesh)
+        wy_plus_mesh = np.zeros_like(base_mesh)
+        wx_minus_mesh[...] = base_mesh[...]
+        wx_plus_mesh[...] = base_mesh[...]
+        wy_minus_mesh[...] = base_mesh[...]
+        wy_plus_mesh[...] = base_mesh[...]
+        base_shape = base_mesh.shape
+
+        for i in range(len(base_exterior[0])):
+            if base_exterior[0][i] + 1 < base_shape[0] and base_mesh[base_exterior[0][i] + 1, base_exterior[1][i]] == base_mesh_id:
+                wx_minus_mesh[base_exterior[0][i] + 1, base_exterior[1][i]] = base_mesh_out_id
+            if base_exterior[0][i] - 1 >= 0 and base_mesh[base_exterior[0][i] - 1, base_exterior[1][i]] == base_mesh_id:
+                wx_plus_mesh[base_exterior[0][i] - 1, base_exterior[1][i]] = base_mesh_out_id
+            if base_exterior[1][i] + 1 < base_shape[1] and base_mesh[base_exterior[0][i], base_exterior[1][i] + 1] == base_mesh_id:
+                wy_minus_mesh[base_exterior[0][i] + 1, base_exterior[1][i] + 1] = base_mesh_out_id
+            if base_exterior[1][i] - 1 >= 0 and base_mesh[base_exterior[0][i], base_exterior[1][i] - 1] == base_mesh_id:
+                wy_plus_mesh[base_exterior[0][i], base_exterior[1][i] - 1] = base_mesh_out_id
+
+        domain_dict["wx_minus"] = np.where(wx_minus_mesh == base_mesh_id)
+        domain_dict["wx_plus"] = np.where(wx_plus_mesh == base_mesh_id)
+        domain_dict["wy_minus"] = np.where(wy_minus_mesh == base_mesh_id)
+        domain_dict["wy_plus"] = np.where(wy_plus_mesh == base_mesh_id)
+        
+        return method_info, (shape_dict, parameters_dict, domain_dict, boundaries_dict)

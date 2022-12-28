@@ -4,6 +4,7 @@ Created on Mon Dec 19 19:02:30 2022
 
 @author: HP
 """
+import numpy as np
 
 class BoundaryCondition():
     def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, boundary_type = "Base", 
@@ -57,6 +58,12 @@ class ConstCondition(BoundaryCondition):
     def set_bias(self, bias:float):
         self.bias = bias
 
+    @staticmethod
+    def helper(self):
+        format_str = "ConstCondition format: Group ID Name Const Bias"
+        formula_str = "y[i, j] = Bias"
+        return format_str, formula_str    
+
     def __str__(self):
         return super(ConstCondition, self).__str__() + ", Formula: y = " + str(self.bias) 
 
@@ -81,6 +88,12 @@ class LinearCondition(BoundaryCondition):
     def set_coefficient(self, coefficient: float):
         self.coefficient = coefficient
     
+    @staticmethod
+    def helper(self):
+        format_str = "LinearCondition format: Group ID Name Linear C O0 O1 Bias"
+        formula_str = "y[i, j] = C0 * y[i+O0, j+O1] + Bias"
+        return format_str, formula_str  
+    
     def __str__(self):
         output_str = super(LinearCondition, self).__str__() + ", Formula: y[i, j] = " + str(self.coefficient) +  "·y[i"
         if self.offset[0] >= 0:
@@ -97,26 +110,28 @@ class LinearCondition(BoundaryCondition):
 class LinearCombinationCondition(BoundaryCondition):
     def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, boundary_parameters_list: list):     
         super(LinearCombinationCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "LinearCombination", boundary_parameters_list)
-        self.bias, self.offsets, self.coefficients = self.parse_parameters(boundary_parameters_list)
+        self.bias, self.quant_coefficient, self.offsets, self.coefficients = self.parse_parameters(boundary_parameters_list)
         
     def process(self, obj, obj0):
         obj[self.domain] = self.bias
         item_num = len(self.offsets)
         for i in range(item_num):
             obj[self.domain] += self.coefficients[i] * obj0[self.domain[0] + self.offsets[i][0], self.domain[1] + self.offsets[i][1]]
+        obj[self.domain] *= self.quant_coefficient
         
         return obj
     
     def parse_parameters(self, boundary_parameters_list):
-        assert len(boundary_parameters_list) > 0 and len(boundary_parameters_list) == 2 + int(boundary_parameters_list[0]) * 3
+        assert len(boundary_parameters_list) > 0 and len(boundary_parameters_list) == 3 + int(boundary_parameters_list[0]) * 3
         
         offsets = []
         coefficients = []
+        quant_coefficient = boundary_parameters_list[1]
         for i in range(int(boundary_parameters_list[0])):
-            coefficients.append(boundary_parameters_list[i * 3 + 1])
-            offsets.append((int(boundary_parameters_list[i * 3 + 2]), int(boundary_parameters_list[i * 3 + 3])))
+            coefficients.append(boundary_parameters_list[i * 3 + 2])
+            offsets.append((int(boundary_parameters_list[i * 3 + 3]), int(boundary_parameters_list[i * 3 + 4])))
                 
-        return boundary_parameters_list[len(boundary_parameters_list)-1], offsets, coefficients
+        return boundary_parameters_list[len(boundary_parameters_list)-1], quant_coefficient, offsets, coefficients
     
     def set_bias(self, bias: float):
         self.bias = bias
@@ -124,89 +139,105 @@ class LinearCombinationCondition(BoundaryCondition):
     def set_coefficient(self, coefficient: list):
         self.coefficient = coefficient
     
+    @staticmethod
+    def helper(self):
+        format_str = "LinearCombinationCondition format: Group ID Name LinearCombination #Term Term0_C0 Term0_C1 Term0_O0 Term0_O1 Term1_C0 ... TermN_O1 Bias"
+        formula_str = "y[i, j] = C00 * x0[i+O00, j+O01] * C01 + C10 * x1[i+O10, j+O11] * C11 + ... + Bias"
+        return format_str, formula_str
+    
     def __str__(self):
-        output_str = super(LinearCombinationCondition, self).__str__() + ", Formula: y[i, j] = "
+        output_str = super(LinearCombinationCondition, self).__str__() + \
+                    ", Formula: y[i, j] = " + str(self.quant_coefficient) + "·("
         for i in range(len(self.offsets)):
             if i != 0 and self.coefficients[i] >= 0:
-                output_str += "+ "
+                output_str += "+"
             output_str += str(self.coefficients[i]) + "·x" + str(i) + "[i"
             if self.offsets[i][0] >= 0:
                 output_str += "+"
             output_str += str(self.offsets[i][0]) + ", j"
             if self.offsets[i][1] >= 0:
                 output_str += "+" 
-            output_str += str(self.offsets[i][1]) + "] "
+            output_str += str(self.offsets[i][1]) + "])"
             
         if self.bias >= 0:
             output_str += "+" 
         output_str += str(self.bias)
         return  output_str
     
-class TwoQuantityLinearCombinationCondition(BoundaryCondition):
+class NQuantityLinearCombinationCondition(BoundaryCondition):
     def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, boundary_parameters_list: list):        
-        super(TwoQuantityLinearCombinationCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "TwoQuantityLinearCombination", boundary_parameters_list)
-        self.bias, self.offsets1, self.coefficients1, self.offsets2, self.coefficients2 = self.parse_parameters(boundary_parameters_list)
+        super(NQuantityLinearCombinationCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "NQuantityLinearCombination", boundary_parameters_list)
+        self.bias, self.quant_coefficients, self.offsets, self.coefficients = self.parse_parameters(boundary_parameters_list)
         
-    def process(self, obj, obj1, obj2):
+    def process(self, obj, objs):
         obj[self.domain] = self.bias
-        item_num = len(self.offsets1)
-        for i in range(item_num):
-            obj[self.domain] += self.coefficients1[i] * obj1[self.domain[0] + self.offsets1[i][0], self.domain[1] + self.offsets1[i][1]]
-        item_num = len(self.offsets2)
-        for i in range(item_num):
-            obj[self.domain] += self.coefficients2[i] * obj2[self.domain[0] + self.offsets2[i][0], self.domain[1] + self.offsets2[i][1]]
-            
+        quant_num = len(self.offsets)
+        for i in range(quant_num):
+            curr_offsets = self.offsets[i]
+            curr_coefficients = self.coefficients[i]
+            curr_res = np.zeros_like(obj)
+            item_num = len(curr_offsets)
+            for j in range(item_num):
+                curr_res[self.domain] += curr_coefficients[j] * objs[i][self.domain[0] + curr_offsets[j][0], \
+                                    self.domain[1] + curr_offsets[j][1]]
+            curr_res = curr_res * self.quant_coefficients[i]
+            obj[self.domain] += curr_res[self.domain]
+        
         return obj
     
     def parse_parameters(self, boundary_parameters_list):
-        offsets1 = []
-        coefficients1 = []
-        for i in range(int(boundary_parameters_list[0])):
-            coefficients1.append(boundary_parameters_list[i * 3 + 1])
-            offsets1.append((int(boundary_parameters_list[i * 3 + 2]), int(boundary_parameters_list[i * 3 + 3])))
+        offsets = []
+        quant_coefficients = []
+        coefficients = []
+        start = 1
+        quant_num = int(boundary_parameters_list[0])
+        for i in range(quant_num):
+            item_num = int(boundary_parameters_list[start])
+            quant_coefficients.append(boundary_parameters_list[start + 1])
+            curr_coefficients = []
+            curr_offsets = []
+            for j in range(item_num):
+                curr_coefficients.append(boundary_parameters_list[start + j * 3 + 2])
+                curr_offsets.append((int(boundary_parameters_list[start + j * 3 + 3]), int(boundary_parameters_list[start + j * 3 + 4])))
+            coefficients.append(curr_coefficients)
+            offsets.append(curr_offsets)
+            start += item_num * 3 + 2
             
-        offsets2 = []
-        coefficients2 = []
-        for i in range(int(boundary_parameters_list[3 * int(boundary_parameters_list[0]) + 1])):
-            coefficients2.append(boundary_parameters_list[i * 3 + 3 * int(boundary_parameters_list[0]) + 2])
-            offsets2.append((int(boundary_parameters_list[i * 3 + 3 * int(boundary_parameters_list[0]) + 3]), int(boundary_parameters_list[i * 3 + 3 * int(boundary_parameters_list[0]) + 4])))
-
-        return boundary_parameters_list[len(boundary_parameters_list)-1], offsets1, coefficients1, offsets2, coefficients2
+        return boundary_parameters_list[len(boundary_parameters_list)-1], quant_coefficients, offsets, coefficients
     
     def set_bias(self, bias:float):
-        self.bias1 = bias
+        self.bias = bias
         
-    def set_coefficient1(self, coefficient: list):
-        self.coefficient1 = coefficient
-            
-    def set_coefficient2(self, coefficient: list):
-        self.coefficient2 = coefficient
+    def set_coefficient(self, coefficient: list):
+        self.coefficient = coefficient
+    
+    @staticmethod
+    def helper(self):
+        format_str = "NQuantityLinearCombinationCondition format: Group ID Name LinearCombination #Quantity #Term \
+                    Quantity0_Term0_C0 Quantity0_Term0_O0 Quantity0_Term0_O1 ... Quantity1_Term0_C0 ... \
+                    QuantityN_TermN_O1 Bias"
+        formula_str = "y[i, j] = C000 * x00[i+O000, j+O001] + ... + C100 * x1[i+1O10, j+O111] + ... + Bias"
+        return format_str, formula_str
     
     def __str__(self):
-        output_str = super(TwoQuantityLinearCombinationCondition, self).__str__() + ", Formula: y[i, j] = "
+        output_str = super(NQuantityLinearCombinationCondition, self).__str__() + ", Formula: y[i, j] = "
 
-        for i in range(len(self.offsets1)):
-            if i != 0 and self.coefficients1[i] >= 0:
-                output_str += "+ "
-            output_str += str(self.coefficients1[i]) + "·x1" + str(i) + "[i"
-            if self.offsets1[i][0] >= 0:
+        for i in range(len(self.offsets)):
+            item_num = len(self.offsets[i])
+            if i != 0 and self.quant_coefficients[i] >= 0:
                 output_str += "+"
-            output_str += str(self.offsets1[i][0]) + ", j"
-            if self.offsets1[i][1] >= 0:
-                output_str += "+" 
-            output_str += str(self.offsets1[i][1]) + "] "
-        
-        for i in range(len(self.offsets2)):
-            if self.coefficients2[i] >= 0:
-                output_str += "+ "
-            output_str += str(self.coefficients2[i]) + "·x1" + str(i) + "[i"
-            if self.offsets2[i][0] >= 0:
-                output_str += "+"
-            output_str += str(self.offsets2[i][0]) + ", j"
-            if self.offsets2[i][1] >= 0:
-                output_str += "+" 
-            output_str += str(self.offsets2[i][1]) + "] "
-        
+            output_str += str(self.quant_coefficients[i]) + "·("
+            for j in range(item_num):
+                if j != 0 and self.coefficients[i][j] >= 0:
+                    output_str += "+"
+                output_str += str(self.coefficients[i][j]) + "·x" + str(i) + str(j) + "[i"
+                if self.offsets[i][j][0] >= 0:
+                    output_str += "+"
+                output_str += str(self.offsets[i][j][0]) + ", j"
+                if self.offsets[i][j][1] >= 0:
+                    output_str += "+" 
+                output_str += str(self.offsets[i][j][1]) + "]"
+            output_str += ")"
         if self.bias >= 0:
             output_str += "+" 
         output_str += str(self.bias)

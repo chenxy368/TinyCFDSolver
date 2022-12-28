@@ -7,32 +7,25 @@ Created on Tue Dec 20 16:48:39 2022
 import numpy as np
 
 class PoissonIterativeSolver():
-    def __init__(self, method_info, mesh_data, metrics = None):
-        assert metrics.__name__ == "<lambda>"
+    def __init__(self, shape: tuple, params: list, domains: list, boundary_process, tol, metrics = None):
+        assert callable(boundary_process) and callable(metrics) and metrics.__name__ == "<lambda>"
         
-        self.shape = mesh_data[0]
-        self.dx = self.read_input("dx", mesh_data[1])
-        self.dy = self.read_input("dy", mesh_data[1])
+        self.shape = shape
+        self.dx = params[0]
+        self.dy = params[1]
         
-        self.interior = self.read_input("domain", mesh_data[2])
-        self.exterior = self.read_input("domain_exterior", mesh_data[2])
+        self.interior = domains[0]
+        self.exterior = domains[1]
 
-        self.boundaries = self.read_input("boundary", mesh_data[3])
+        self.boundary_process = boundary_process
 
-        self.method_name = method_info[0]
-        self.tol = float(method_info[1])  
+        self.tol = tol
         
         self.metrics = metrics
-
-    def read_input(self, keyword: str, input_dict: dict):
-        if keyword in input_dict:
-            return input_dict[keyword]
-        else:
-            raise RuntimeError(keyword + " MISSING INFORMATION")    
         
-class PointJacobi(PoissonIterativeSolver):
-    def __init__(self, method_info, mesh_data, metrics = None):
-        super(PointJacobi, self).__init__(method_info, mesh_data, metrics)
+class PointJacobiSolver(PoissonIterativeSolver):
+    def __init__(self, shape: tuple, params: list, domains: list, boundary_process, tol, metrics = None):
+        super(PointJacobiSolver, self).__init__(shape, params, domains, boundary_process, tol, metrics)
         
     def solver(self, f):
         psi = np.zeros([self.shape[0], self.shape[1]], dtype = float)
@@ -41,8 +34,7 @@ class PointJacobi(PoissonIterativeSolver):
         error = 1 
 
         while error > self.tol:
-            for boundary in self.boundaries:
-                psi = boundary.process(psi)
+            psi = self.boundary_process(psi)
                     
             tmp = np.zeros_like(psi)
             tmp[self.interior] = (1.0 / (2.0 / self.dx / self.dx + 2.0 / self.dy / self.dy)) * ((1.0 / self.dx / self.dx) * psi[self.interior[0] - 1, self.interior[1]] \
@@ -59,9 +51,9 @@ class PointJacobi(PoissonIterativeSolver):
         
         return psi
         
-class GaussSeidel(PoissonIterativeSolver):
-    def __init__(self, method_info, mesh_data, metrics):
-        super(GaussSeidel, self).__init__(method_info, mesh_data, metrics)    
+class GaussSeidelSolver(PoissonIterativeSolver):
+    def __init__(self, shape: tuple, params: list, domains: list, boundary_process, tol, metrics = None):
+        super(GaussSeidelSolver, self).__init__(self, shape, params, domains, boundary_process, tol, metrics)
 
     def solver(self, f):
         psi = np.zeros([self.shape[0], self.shape[1]], dtype = float)
@@ -69,8 +61,7 @@ class GaussSeidel(PoissonIterativeSolver):
         iteration = 0
         error = 1 
         while error > self.tol:
-            for boundary in self.boundaries:
-                psi = boundary.process(psi)
+            psi = self.boundary_process(psi)
                 
             tmp = np.zeros_like(psi) 
             tmp[self.exterior] = psi[self.exterior]
@@ -91,11 +82,11 @@ class GaussSeidel(PoissonIterativeSolver):
         
         return psi
 
-class SOR(PoissonIterativeSolver):
-    def __init__(self, method_info, mesh_data, metrics):
-        assert len(method_info) == 3 and float(method_info[2]) < 2.0 and float(method_info[2]) > 1.0
-        super(SOR, self).__init__(method_info, mesh_data, metrics = None)
-        self.wsor = float(method_info[2])  
+class SORSolver(PoissonIterativeSolver):
+    def __init__(self, shape: tuple, params: list, domains: list, boundary_process, tol, metrics = None, wsor = 1.8):
+        assert wsor < 2.0 and wsor > 1.0
+        super(SORSolver, self).__init__(shape, params, domains, boundary_process, tol, metrics)
+        self.wsor = wsor
 
     def solver(self, f):
         psi = np.zeros([self.shape[0], self.shape[1]], dtype = float)
@@ -104,8 +95,7 @@ class SOR(PoissonIterativeSolver):
         error = 1 
         
         while error > self.tol:
-            for boundary in self.boundaries:
-                psi = boundary.process(psi)
+            psi = self.boundary_process(psi)
                 
             tmp = np.zeros_like(psi) 
             tmp[self.exterior] = psi[self.exterior]
