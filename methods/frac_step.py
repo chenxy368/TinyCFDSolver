@@ -3,7 +3,8 @@ from solvers.frac_step_solver import FracStepSolver
 from utils.grid_loader import GridLoader
 
 class FracStep():
-    def __init__(self, root, metrics = None, step_visualization = None, final_visualization = None):
+    def __init__(self, root, metrics = None, step_visualization = None, final_visualization = None, 
+                 initial_condition = None):
         assert callable(metrics) and metrics.__name__ == "<lambda>" 
         
         loader = GridLoader(root)
@@ -51,10 +52,10 @@ class FracStep():
                                      (mesh_data[2]["u"], mesh_data[2]["v"], mesh_data[2]["p"], 
                                       mesh_data[2]["u_exterior"], mesh_data[2]["v_exterior"], mesh_data[2]["p_exterior"]),
                                      (self.u_boundary_process, self.v_boundary_process, self.p_boundary_process_frac_step),
-                                     poisson_solver, self.extra_computing, step_visualization, final_visualization)
+                                     poisson_solver, self.extra_computing, step_visualization, final_visualization, initial_condition)
 
     def solve(self, num_timesteps, checkpoint_interval):
-        self.solver.solve(num_timesteps, checkpoint_interval)
+        return self.solver.solve(num_timesteps, checkpoint_interval)
     
     def u_boundary_process(self, u, v, p, t):
         for boundary in self.u_boundaries:

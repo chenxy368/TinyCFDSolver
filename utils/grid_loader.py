@@ -5,6 +5,8 @@ Created on Tue Dec 20 03:12:39 2022
 @author: HP
 """
 import numpy as np
+import re
+
 from utils.boundary import ConstCondition, LinearCondition, \
                            LinearCombinationCondition, \
                            NQuantityLinearCombinationCondition, \
@@ -75,6 +77,7 @@ class GridLoader():
         
         if str_list[0] not in parameters_dict:
             parameters_dict[str_list[0]] = str_list[1]
+
         return parameters_dict
     
     def parse_boundary(self, str_list: list, boundaries_dict: dict, mesh_dict: dict, parameters_dict: dict):
@@ -97,11 +100,11 @@ class GridLoader():
             
         for index in range(len(boundary_params)):
             for key in parameters_dict:
-                if key in boundary_params[index]:
+                if key in boundary_params[index] and re.match('^[-0-9+*/]+$', boundary_params[index].replace(key, parameters_dict[key])):
                     boundary_params[index] = boundary_params[index].replace(key, parameters_dict[key])
 
             boundary_params[index] = float(eval(boundary_params[index]))
-
+        
         new_boundary = boundary_classes[boundary_information[3]](boundary_id, boundary_name, boundary_domain, boundary_params)
         
         print(new_boundary)

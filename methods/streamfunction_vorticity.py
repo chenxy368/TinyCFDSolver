@@ -10,7 +10,8 @@ from solvers.streamfunction_vorticity_solver import StreamFunctionVorticitySolve
 from utils.grid_loader import BlendSFVGridLoader2D
 
 class StreamFunctionVorticity():
-    def __init__(self, root, metrics = None, step_visualization = None, final_visualization = None):
+    def __init__(self, root, metrics = None, step_visualization = None, final_visualization = None,
+                 initial_condition = None):
         assert callable(metrics) and metrics.__name__ == "<lambda>" 
         
         loader = BlendSFVGridLoader2D(root)
@@ -58,7 +59,8 @@ class StreamFunctionVorticity():
                                       mesh_data[2]["wx_plus"],  mesh_data[2]["wy_minus"], mesh_data[2]["wy_plus"]),
                                      (self.u_boundary_process, self.v_boundary_process, self.psi_boundary_process_frac_step,
                                       self.w_boundary_process),
-                                     poisson_solver, float(method_info[1]),self.extra_computing, step_visualization, final_visualization)
+                                     poisson_solver, float(method_info[1]),self.extra_computing, step_visualization, 
+                                     final_visualization, initial_condition)
     
         self.u = np.zeros([mesh_data[0]["mesh"][0], mesh_data[0]["mesh"][1]], dtype = float)
         self.v = np.zeros([mesh_data[0]["mesh"][0], mesh_data[0]["mesh"][1]], dtype = float)

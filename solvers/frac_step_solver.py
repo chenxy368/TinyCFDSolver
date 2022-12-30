@@ -2,7 +2,7 @@ import numpy as np
 
 class FracStepSolver():
     def __init__(self, shapes: tuple, params: list, domains: list, boundaries: list, poisson_solver, extra_computing = None,
-                 step_visualization = None, final_visualization = None):
+                 step_visualization = None, final_visualization = None, initial_condition = None):
          
         # Domain information
         self.u_shape = shapes[0]
@@ -35,6 +35,8 @@ class FracStepSolver():
         self.step_visualization = step_visualization
         self.final_visualization = final_visualization
         
+        self.initial_condition = initial_condition
+        
     def read_input(self, keyword: str, input_dict: dict):
         if keyword in input_dict:
             return input_dict[keyword]
@@ -49,6 +51,11 @@ class FracStepSolver():
         u = np.zeros([self.u_shape[0], self.u_shape[1]], dtype = float)
         v = np.zeros([self.v_shape[0], self.v_shape[1]], dtype = float)
         p = np.zeros([self.p_shape[0], self.p_shape[1]], dtype = float)
+        
+        if self.initial_condition is not None:
+            u[...] = self.initial_condition[0][...]
+            v[...] = self.initial_condition[1][...]
+            p[...] = self.initial_condition[2][...]
         
         # time loop
         for t in range(num_timesteps):
@@ -127,3 +134,5 @@ class FracStepSolver():
 
         if self.final_visualization is not None:
             self.final_visualization(velocity_list, pressure_list, self.dx, self.dy)
+
+        return np.stack((u, v, p), axis = 0)

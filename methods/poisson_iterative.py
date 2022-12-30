@@ -9,7 +9,7 @@ from utils.grid_loader import GridLoader
 import numpy as np
 
 class PoissonIterative():
-    def __init__(self, root, metrics = None, final_visualization = None):
+    def __init__(self, root, metrics = None, final_visualization = None, initial_condition = None):
         assert callable(metrics) and metrics.__name__ == "<lambda>" 
         
         loader = GridLoader(root)
@@ -34,24 +34,24 @@ class PoissonIterative():
                                        (mesh_data[1]["dx"], mesh_data[1]["dy"]), 
                                        (mesh_data[2]["mesh"], mesh_data[2]["mesh_exterior"]), 
                                        self.boundary_process, float(method_info[2]), metrics, 
-                                       float(method_info[3]), final_visualization)  
+                                       float(method_info[3]), final_visualization, initial_condition)  
         elif solver_name == "GaussSeidel":
             self.solver = GaussSeidelSolver(self.shape, 
                                                (mesh_data[1]["dx"], mesh_data[1]["dy"]), 
                                                (mesh_data[2]["mesh"], mesh_data[2]["mesh_exterior"]), 
                                                self.boundary_process, float(method_info[2]), metrics, 
-                                               final_visualization)
+                                               final_visualization, initial_condition)
         else:
             self.solver = PointJacobiSolver(self.shape, 
                                                (mesh_data[1]["dx"], mesh_data[1]["dy"]), 
                                                (mesh_data[2]["mesh"], mesh_data[2]["mesh_exterior"]), 
                                                self.boundary_process, float(method_info[2]), metrics, 
-                                               final_visualization)
+                                               final_visualization, initial_condition)
 
     def solve(self, f):
         if type(f) is not np.ndarray:
             f = np.full((self.shape[0], self.shape[1]), float(f), dtype = float)
-        self.solver.solve(f)
+        return self.solver.solve(f)
     
     def boundary_process(self, x):
         for boundary in self.x_boundaries:

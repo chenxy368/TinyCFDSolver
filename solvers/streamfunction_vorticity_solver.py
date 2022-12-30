@@ -8,7 +8,7 @@ import numpy as np
 
 class StreamFunctionVorticitySolver():
     def __init__(self, shape: tuple, params: list, domians: list, boundaries: list, poisson_solver, blend_factor = 0, extra_computing = None,
-                 step_visualization = None, final_visualization = None):
+                 step_visualization = None, final_visualization = None, initial_condition = None):
         self.shape = shape
         
         self.dt = params[0]
@@ -34,6 +34,8 @@ class StreamFunctionVorticitySolver():
         
         self.step_visualization = step_visualization
         self.final_visualization = final_visualization
+        
+        self.initial_condition = initial_condition
     
     def solve(self, num_timesteps, checkpoint_interval):
         velocity_list = []
@@ -45,7 +47,13 @@ class StreamFunctionVorticitySolver():
         v = np.zeros([self.shape[0], self.shape[1]], dtype = float)
         w = np.zeros([self.shape[0], self.shape[1]], dtype = float)
         psi = np.zeros([self.shape[0], self.shape[1]], dtype = float)
-
+        
+        if self.initial_condition is not None:
+            u[...] = self.initial_condition[0][...]
+            v[...] = self.initial_condition[1][...]
+            w[...] = self.initial_condition[2][...]
+            psi[...] = self.initial_condition[3][...]
+        
         u = self.u_boundary_process(u, v, psi, w, 0)
         v = self.v_boundary_process(u, v, psi, w, 0)
         
@@ -128,3 +136,5 @@ class StreamFunctionVorticitySolver():
 
         if self.final_visualization is not None:
             self.final_visualization(velocity_list, w_list, self.dx, self.dy)
+        
+        return np.stack((u, v, w, psi), axis = 0)

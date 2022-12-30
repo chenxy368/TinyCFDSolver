@@ -1,6 +1,6 @@
 import numpy as np
 
-from methods import FracStep, StreamFunctionVorticity, PoissonIterative
+from methods import FracStep, StreamFunctionVorticity, PoissonIterative, UpwindCentral2D
 from utils import (plot_one_contourf, plot_one_contour, plot_one_streamlines, animate)
 
 
@@ -16,21 +16,29 @@ def main(method):
         animator = lambda velocity, pressure, dx, dy: (animate(velocity, dx, dy, "velocity magnitude", "velocity[m/s]", 0.0, 0.07),
                     animate(pressure, dx, dy, "pressure", "pressure[Pa]", 0, 5000.0))
         method = FracStep("sample_cases/small_case", RANGE, ploter, animator)
-        method.solve(100, 10)
+        res = method.solve(100, 10)
     elif method == "SFV":
         ploter = lambda u, v, velocity, w, dx, dy, dt, t: (plot_one_contourf(velocity, dx, dy, "velocity magnitude at " + str(round((t + 1) * dt, 3)) + "s", "velocity[m/s]", 0.0, 6.0),
                                           plot_one_streamlines(u.transpose(), v.transpose(), dx, dy, 'Streamlines at ' + str(round((t + 1) * dt, 3)) + 's'))
 
         animator = lambda velocity, w, dx, dy: (animate(velocity, dx, dy, "velocity magnitude", "velocity[m/s]", 0.0, 6.0), 
-                                                plot_one_contour((np.transpose(w[len(w) - 1])), dx, dy, "vorticity at final"))
+                                                plot_one_contour((w[len(w) - 1]), dx, dy, "vorticity at final"))
 
         method = StreamFunctionVorticity("sample_cases/driven_cavity_case", MAE, ploter, animator)
-        method.solve(int(0.2/0.002), 10)
+        res = method.solve(int(0.2/0.002), 10)
     elif method == "PoissonIterative":
         ploter = lambda X, dx, dy: (plot_one_contourf(X.transpose(), dx, dy, "temperature", "temperature[◦C]", 0.0, 1.0))
         method = PoissonIterative("sample_cases/heat_diffusion_case", MAE, ploter)
-        method.solve(0)
-        
-        
+        res = method.solve(0)
+    elif method == "UpwindCentral2D":
+        init_path = "sample_cases/advection_diffusion_init_case/init.npy"
+        init = np.load(init_path)
+        ploter = lambda X, dx, dy, dt, t: (plot_one_contourf(X.transpose(), dx, dy, "temperature at " + str(round((t + 1) * dt, 3)) + "s", "temperature[$^\circ$C]", 0.0, 1.05))        
+
+        animator = lambda X, dx, dy: (plot_one_contourf(X[len(X) - 1], dx, dy, "temperature", "temperature[$^\circ$C]", 0.0, 1.05))
+        method = UpwindCentral2D("sample_cases/advection_diffusion_init_case", None, animator, init)
+        res = method.solve(int(4/0.002), 100)
+    
+        #np.save("sample_cases/advection_diffusion_init_case/res.npy", res)
 if __name__ == "__main__":
-    main("Frac_Step")
+    main("UpwindCentral2D")

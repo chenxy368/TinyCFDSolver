@@ -8,8 +8,11 @@ import numpy as np
 
 class PoissonIterativeSolver():
     def __init__(self, shape: tuple, params: list, domains: list, boundary_process, tol, metrics = None, 
-                 final_visualization = None):
+                 final_visualization = None, initial_condition = None):
         assert callable(boundary_process) and callable(metrics) and metrics.__name__ == "<lambda>"
+        
+        if initial_condition.shape != shape:
+            raise RuntimeError("Initial Condition Shape Dismatch")
         
         self.shape = shape
         self.dx = params[0]
@@ -26,6 +29,8 @@ class PoissonIterativeSolver():
         
         self.final_visualization = final_visualization
         
+        self.initial_condition = initial_condition
+        
 class PointJacobiSolver(PoissonIterativeSolver):
     def __init__(self, shape: tuple, params: list, domains: list, boundary_process, tol, metrics = None,
                  final_visualization = None):
@@ -33,6 +38,9 @@ class PointJacobiSolver(PoissonIterativeSolver):
         
     def solve(self, f):
         X = np.zeros([self.shape[0], self.shape[1]], dtype = float)
+        if self.initial_condition is not None:
+            X[...] = self.initial_condition[...]
+            
 
         iteration = 0
         error = 1 
@@ -65,6 +73,8 @@ class GaussSeidelSolver(PoissonIterativeSolver):
 
     def solve(self, f):
         X = np.zeros([self.shape[0], self.shape[1]], dtype = float)
+        if self.initial_condition is not None:
+            X[...] = self.initial_condition[...]
 
         iteration = 0
         error = 1 
@@ -102,6 +112,8 @@ class SORSolver(PoissonIterativeSolver):
 
     def solve(self, f):
         X = np.zeros([self.shape[0], self.shape[1]], dtype = float)
+        if self.initial_condition is not None:
+            X[...] = self.initial_condition[...]
 
         iteration = 0
         error = 1 
