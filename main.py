@@ -1,6 +1,6 @@
 import numpy as np
 
-from methods import FracStep, StreamFunctionVorticity, PoissonIterative, UpwindCentral2D
+from methods import FracStep, StreamFunctionVorticity, PoissonIterative, UpwindCentral2D, CrankNicolson2D, ADI
 from utils import (plot_one_contourf, plot_one_contour, plot_one_streamlines, animate)
 
 
@@ -40,5 +40,23 @@ def main(method):
         res = method.solve(int(4/0.002), 100)
     
         #np.save("sample_cases/advection_diffusion_init_case/res.npy", res)
+    elif method == "CrankNicolson2D":
+        init_path = "sample_cases/diffusion_CK_case/init.npy"
+        init = np.load(init_path)
+
+        ploter = lambda X, dx, dy, dt, t: (plot_one_contourf(X.transpose(), dx, dy, "temperature at " + str(round((t + 1) * dt, 3)) + "s", "temperature[K]", 0.0, 1650.0))
+
+        animator = lambda X, dx, dy: (animate(X, dx, dy, "temperature", "temperature[K]", 0.0, 1650.0))
+        method = CrankNicolson2D("sample_cases/diffusion_CK_case", ploter, animator, init)
+
+        res =  method.solve(int(0.05/0.001), 3)
+        #np.save("sample_cases/diffusion_CK_case/res.npy", res)
+    elif method == "ADI":
+        ploter = lambda X, dx, dy, dt, t: (plot_one_contourf(X.transpose(), dx, dy, "temperature at " + str(round((t + 1) * dt, 3)) + "s", "temperature[K]", 0.0, 1650.0))
+
+        animator = lambda X, dx, dy: (animate(X, dx, dy, "temperature", "temperature[K]", 0.0, 1650.0))
+        method = ADI("sample_cases/diffusion_ADI_case", ploter, animator)
+        return method.solve(int(0.05/0.001), 3)
+        
 if __name__ == "__main__":
-    main("UpwindCentral2D")
+    X = main("ADI")

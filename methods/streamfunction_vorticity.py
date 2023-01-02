@@ -23,7 +23,7 @@ class StreamFunctionVorticity():
             "mesh": ["u", "v", "psi", "w_v_psi", "w_u_psi", "psi_v", "w_u_v_psi"],
         }
 
-        method_info, mesh_data = loader.load_grid(domain_dict, mesh_boundary_dict, "mesh")
+        method_info, mesh_data, _ = loader.load_grid(domain_dict, mesh_boundary_dict, "mesh")
 
         self.u_boundaries = self.check_boundary("u", mesh_data[3])
         self.v_boundaries = self.check_boundary("v", mesh_data[3])

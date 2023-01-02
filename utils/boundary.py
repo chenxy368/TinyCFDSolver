@@ -7,7 +7,7 @@ Created on Mon Dec 19 19:02:30 2022
 import numpy as np
 
 class BoundaryCondition():
-    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, boundary_type = "Base", 
+    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: tuple, boundary_type = "Base", 
                  boundary_parameters_list = []):
         self.id = boundary_id
         self.name = boundary_name
@@ -42,7 +42,7 @@ class BoundaryCondition():
         return "ID: " + str(self.id) + ", Name: " +  self.name + ", Type: " + self.type
     
 class ConstCondition(BoundaryCondition):
-    def __init__(self, boundary_id: int, boundary_name: str, boundary_domain: list, boundary_parameters_list:list):       
+    def __init__(self, boundary_id: int, boundary_name: str, boundary_domain: tuple, boundary_parameters_list:list):       
         super(ConstCondition, self).__init__(boundary_id, boundary_name, boundary_domain,  "Const", boundary_parameters_list)
         self.bias = self.parse_parameters(boundary_parameters_list)
         
@@ -68,7 +68,7 @@ class ConstCondition(BoundaryCondition):
         return super(ConstCondition, self).__str__() + ", Formula: y = " + str(self.bias) 
 
 class LinearCondition(BoundaryCondition):
-    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, boundary_parameters_list: list):
+    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: tuple, boundary_parameters_list: list):
         super(LinearCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "Linear", boundary_parameters_list)
         self.bias, self.offset, self.coefficient = self.parse_parameters(boundary_parameters_list)
         
@@ -108,7 +108,7 @@ class LinearCondition(BoundaryCondition):
         return output_str
     
 class LinearCombinationCondition(BoundaryCondition):
-    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, boundary_parameters_list: list):     
+    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: tuple, boundary_parameters_list: list):     
         super(LinearCombinationCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "LinearCombination", boundary_parameters_list)
         self.bias, self.quant_coefficient, self.offsets, self.coefficients = self.parse_parameters(boundary_parameters_list)
         
@@ -165,7 +165,7 @@ class LinearCombinationCondition(BoundaryCondition):
         return  output_str
     
 class NQuantityLinearCombinationCondition(BoundaryCondition):
-    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, boundary_parameters_list: list):        
+    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: tuple, boundary_parameters_list: list):        
         super(NQuantityLinearCombinationCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "NQuantityLinearCombination", boundary_parameters_list)
         self.bias, self.quant_coefficients, self.offsets, self.coefficients = self.parse_parameters(boundary_parameters_list)
         
@@ -245,7 +245,7 @@ class NQuantityLinearCombinationCondition(BoundaryCondition):
         return  output_str
     
 class LinearSpacialCondition(BoundaryCondition):
-    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: list, boundary_parameters_list: list):        
+    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: tuple, boundary_parameters_list: list):        
         super(LinearSpacialCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "LinearSpacial", boundary_parameters_list)
         self.bias, self.coefficients = self.parse_parameters(boundary_parameters_list)
         

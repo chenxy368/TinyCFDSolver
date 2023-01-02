@@ -11,12 +11,16 @@ from utils.boundary import ConstCondition, LinearCondition, \
                            LinearCombinationCondition, \
                            NQuantityLinearCombinationCondition, \
                            LinearSpacialCondition
+                           
+from utils.implicit_boundary import FirstOrderCondition2D, FirstOrderCondition1D
 
 boundary_classes = {"Const": ConstCondition,
                     "Linear": LinearCondition, 
                     "LinearCombination": LinearCombinationCondition, 
                     "NQuantityLinearCombination": NQuantityLinearCombinationCondition,
                     "LinearSpacial": LinearSpacialCondition}
+implcit_boundry_classes = {"FirstOrder2D": FirstOrderCondition2D,
+                           "FirstOrder1D": FirstOrderCondition1D}
 
 
 class GridLoader():
@@ -94,19 +98,22 @@ class GridLoader():
         boundary_id = int(boundary_information[1])
         boundary_domain = np.where(mesh == int(boundary_information[1]))
         boundary_params = boundary_information[4:]
-
-        if boundary_information[3] not in boundary_classes:
+        
+        if boundary_information[3] not in boundary_classes and boundary_information[3] not in implcit_boundry_classes:
             raise RuntimeError('Boundary Type Error')
             
         for index in range(len(boundary_params)):
             for key in parameters_dict:
-                if key in boundary_params[index] and re.match('^[-0-9+*/]+$', boundary_params[index].replace(key, parameters_dict[key])):
+                if key in boundary_params[index] and re.match('^[-0-9+*/.()]+$', boundary_params[index].replace(key, parameters_dict[key])):
                     boundary_params[index] = boundary_params[index].replace(key, parameters_dict[key])
 
             boundary_params[index] = float(eval(boundary_params[index]))
         
-        new_boundary = boundary_classes[boundary_information[3]](boundary_id, boundary_name, boundary_domain, boundary_params)
-        
+        if boundary_information[3] in boundary_classes:
+            new_boundary = boundary_classes[boundary_information[3]](boundary_id, boundary_name, boundary_domain, boundary_params)
+        else:
+            new_boundary = implcit_boundry_classes[boundary_information[3]](boundary_id, boundary_name, boundary_domain, mesh.shape, boundary_params)
+            
         print(new_boundary)
         
         return new_boundary
@@ -132,13 +139,15 @@ class GridLoader():
         method_info, parameters_dict, interior_ID_dict, boundaries_dict = self.parse_grid_info("grid_information.txt", interior_ID_dict, boundaries_dict, mesh_dict)
         
         for key in parameters_dict:
-            parameters_dict[key] = float(parameters_dict[key])
+            parameters_dict[key] = float(eval(parameters_dict[key]))
         
+        mesh_dict.clear()
         for key in interior_ID_dict:
+            mesh_dict[key] = domain_dict[key]
             domain_dict[key + "_exterior"] = np.where(domain_dict[key] != interior_ID_dict[key])
             domain_dict[key] = np.where(domain_dict[key] == interior_ID_dict[key])
         
-        return method_info, (shape_dict, parameters_dict, domain_dict, boundaries_dict)
+        return method_info, (shape_dict, parameters_dict, domain_dict, boundaries_dict), mesh_dict
 
 class BlendSFVGridLoader2D(GridLoader):
     def __init__(self, root: str):

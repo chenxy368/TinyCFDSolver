@@ -21,7 +21,7 @@ class PoissonIterative():
             "mesh": ["X"],
         }
 
-        method_info, mesh_data = loader.load_grid(domain_dict, mesh_boundary_dict)
+        method_info, mesh_data, _ = loader.load_grid(domain_dict, mesh_boundary_dict)
         self.shape = mesh_data[0]["mesh"]
         self.x_boundaries = mesh_data[3]["X"]
         

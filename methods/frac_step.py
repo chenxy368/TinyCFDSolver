@@ -20,7 +20,7 @@ class FracStep():
             "p": ["p"]
         }
 
-        method_info, mesh_data = loader.load_grid(domain_dict, mesh_boundary_dict)
+        method_info, mesh_data, _ = loader.load_grid(domain_dict, mesh_boundary_dict)
         
         self.u_boundaries = mesh_data[3]["u"]
         self.v_boundaries = mesh_data[3]["v"]
