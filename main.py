@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Dec 20 03:12:39 2022
+
+@author: Xinyang Chen
+"""
 import numpy as np
 
 from methods import FracStep, StreamFunctionVorticity, PoissonIterative, UpwindCentral2D, CrankNicolson2D, ADI
@@ -15,7 +21,7 @@ def main(method):
 
         animator = lambda velocity, pressure, dx, dy: (animate(velocity, dx, dy, "velocity magnitude", "velocity[m/s]", 0.0, 0.07),
                     animate(pressure, dx, dy, "pressure", "pressure[Pa]", 0, 5000.0))
-        method = FracStep("sample_cases/small_case", RANGE, ploter, animator)
+        method = FracStep("sample_cases/origin_case", RANGE, ploter, animator)
         res = method.solve(100, 10)
     elif method == "SFV":
         ploter = lambda u, v, velocity, w, dx, dy, dt, t: (plot_one_contourf(velocity, dx, dy, "velocity magnitude at " + str(round((t + 1) * dt, 3)) + "s", "velocity[m/s]", 0.0, 6.0),
@@ -56,7 +62,7 @@ def main(method):
 
         animator = lambda X, dx, dy: (animate(X, dx, dy, "temperature", "temperature[K]", 0.0, 1650.0))
         method = ADI("sample_cases/diffusion_ADI_case", ploter, animator)
-        return method.solve(int(0.05/0.001), 3)
+        res = method.solve(int(0.05/0.001), 3)
         
 if __name__ == "__main__":
-    X = main("ADI")
+    X = main("PoissonIterative")

@@ -2,16 +2,31 @@
 """
 Created on Tue Dec 20 16:48:39 2022
 
-@author: HP
+@author: Xinyang Chen
 """
 import numpy as np
 
 class PoissonIterativeSolver():
+    """Poisson Iterative Solver Base Class
+        
+    The base class of different Poisson iterative solvers
+        
+    Attributes:
+        shape: the shape of  grid
+        dx, dy, mu, rho: grid length
+        interior: interior slice of grid
+        exterior: exterior slice of grid
+        tol: convergence tolerance
+        extra_computing: extra computing at the end of each timestep
+        step_visualization: visualization function at each timestep
+        initial_condition: initial condition
+    """
     def __init__(self, shape: tuple, params: list, domains: list, boundary_process, tol, metrics = None, 
                  final_visualization = None, initial_condition = None):
-        assert callable(boundary_process) and callable(metrics) and metrics.__name__ == "<lambda>"
-        
-        if initial_condition.shape != shape:
+        assert callable(metrics) and metrics.__name__ == "<lambda>"
+
+        # Check Initial Condition's Shape
+        if initial_condition is not None and initial_condition.shape != shape:
             raise RuntimeError("Initial Condition Shape Dismatch")
         
         self.shape = shape
@@ -32,19 +47,32 @@ class PoissonIterativeSolver():
         self.initial_condition = initial_condition
         
 class PointJacobiSolver(PoissonIterativeSolver):
+    """Point Jacobi Solver Class
+        
+    Implementation of Point Jacobi Method. See reference at https://en.wikipedia.org/wiki/Jacobi_method
+    """
     def __init__(self, shape: tuple, params: list, domains: list, boundary_process, tol, metrics = None,
-                 final_visualization = None):
+                 final_visualization = None, initial_condition = None):
         super(PointJacobiSolver, self).__init__(shape, params, domains, boundary_process, tol, metrics, final_visualization)
         
     def solve(self, f):
+        """ Solve Poissson equation with Point Jacobi Method
+        
+        Args:
+            num_timesteps: the number of total timesteps
+            checkpoint_interval: frequency of calling step postprocess
+        Return:
+            result after converging
+        """
+        # Initialization
         X = np.zeros([self.shape[0], self.shape[1]], dtype = float)
         if self.initial_condition is not None:
             X[...] = self.initial_condition[...]
             
-
         iteration = 0
         error = 1 
 
+        # Solve iteratively
         while error > self.tol:
             X = self.boundary_process(X)
                     
@@ -59,7 +87,8 @@ class PointJacobiSolver(PoissonIterativeSolver):
                 
             iteration += 1
         
-        print('Number of iterations: ', iteration)
+        # Postprocess
+        print('Number of iterations in Possion Iterative Solver: ', iteration)
         
         if self.final_visualization is not None:
             self.final_visualization(X, self.dx, self.dy)
@@ -67,17 +96,32 @@ class PointJacobiSolver(PoissonIterativeSolver):
         return X
         
 class GaussSeidelSolver(PoissonIterativeSolver):
+    """Gauss Seidel Solver Class
+        
+    Implementation of Gauss Seidel Method. See reference at https://en.wikipedia.org/wiki/Gauss-Seidel_method
+    """
     def __init__(self, shape: tuple, params: list, domains: list, boundary_process, tol, metrics = None, 
-                 final_visualization = None):
+                 final_visualization = None, initial_condition = None):
         super(GaussSeidelSolver, self).__init__(self, shape, params, domains, boundary_process, tol, metrics, final_visualization)
 
     def solve(self, f):
+        """ Solve Poissson equation with Gauss Seidel Method
+        
+        Args:
+            num_timesteps: the number of total timesteps
+            checkpoint_interval: frequency of calling step postprocess
+        Return:
+            result after converging
+        """
+        # Initialization
         X = np.zeros([self.shape[0], self.shape[1]], dtype = float)
         if self.initial_condition is not None:
             X[...] = self.initial_condition[...]
 
         iteration = 0
         error = 1 
+        
+        # Solve iteratively
         while error > self.tol:
             X = self.boundary_process(X)
                 
@@ -96,7 +140,8 @@ class GaussSeidelSolver(PoissonIterativeSolver):
                 
             iteration += 1
         
-        print('Number of iterations: ', iteration)
+        # Postprocess
+        print('Number of iterations in Possion Iterative Solver: ', iteration)
         
         if self.final_visualization is not None:
             self.final_visualization(X, self.dx, self.dy)
@@ -104,13 +149,29 @@ class GaussSeidelSolver(PoissonIterativeSolver):
         return X
 
 class SORSolver(PoissonIterativeSolver):
+    """Successive over-relaxation Solver Class
+        
+    Implementation of successive over-relaxation Method. See reference at https://en.wikipedia.org/wiki/Successive_over-relaxation
+    
+    Args:
+        wsor: relaxation factor
+    """
     def __init__(self, shape: tuple, params: list, domains: list, boundary_process, tol, metrics = None, wsor = 1.8,
-                 final_visualization = None):
+                 final_visualization = None, initial_condition = None):
         assert wsor < 2.0 and wsor > 1.0
         super(SORSolver, self).__init__(shape, params, domains, boundary_process, tol, metrics, final_visualization)
         self.wsor = wsor
 
     def solve(self, f):
+        """ Solve Poissson equation with successive over-relaxation Method
+        
+        Args:
+            num_timesteps: the number of total timesteps
+            checkpoint_interval: frequency of calling step postprocess
+        Return:
+            result after converging
+        """
+        # Initialization
         X = np.zeros([self.shape[0], self.shape[1]], dtype = float)
         if self.initial_condition is not None:
             X[...] = self.initial_condition[...]
@@ -118,6 +179,7 @@ class SORSolver(PoissonIterativeSolver):
         iteration = 0
         error = 1 
         
+        # Solve iteratively
         while error > self.tol:
             X = self.boundary_process(X)
                 
@@ -135,7 +197,8 @@ class SORSolver(PoissonIterativeSolver):
                 
             iteration += 1
         
-        print('Number of iterations: ', iteration)
+        # Postprocess
+        print('Number of iterations in Possion Iterative Solver: ', iteration)
         
         if self.final_visualization is not None:
             self.final_visualization(X, self.dx, self.dy)

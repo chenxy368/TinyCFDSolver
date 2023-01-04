@@ -2,11 +2,32 @@
 """
 Created on Wed Dec 21 04:24:08 2022
 
-@author: HP
+@author: Xinyang Chen
 """
 import numpy as np
 
 class StreamFunctionVorticitySolver():
+    """Streamfunction Vorticity Solver
+    
+    Implementation of streamfunction vorticity method with blended scheme for N-S equation. Solver is called in method.
+    See discription and formulas at https://curiosityfluids.com/2016/03/14/streamfunction-vorticity-solution-lid-driven-cavity-flow/
+    
+    Attributes:
+        shape: the shape of grid
+        dt, dx, dy, nu: timestep length, grid length, dinamic viscosity
+        interior: interior slice of grid
+        exterior: exterior slice of grid
+        u_boundary_process, v_boundary_process, psi_boundary_process, w_boundary_process: 
+            boundaries process functions of u(velocity), v(velocity), psi(streamfunction), and w(vorticity)
+        wx_minus_interior, wx_plus_interior, wy_minus_interior, wy_plus_interior: 
+            blended scheme computation(third order) interior
+        poisson_solver: a poisson iterative solver
+        blend_factor: blended scheme items factor(0 <= and < 1)
+        extra_computing: extra computing at the end of each timestep
+        step_visualization: visualization function at each timestep
+        final_visualization: final visualization function
+        initial_condition: initial conditions of u, v and p
+    """
     def __init__(self, shape: tuple, params: list, domians: list, boundaries: list, poisson_solver, blend_factor = 0, extra_computing = None,
                  step_visualization = None, final_visualization = None, initial_condition = None):
         self.shape = shape
@@ -38,6 +59,22 @@ class StreamFunctionVorticitySolver():
         self.initial_condition = initial_condition
     
     def solve(self, num_timesteps, checkpoint_interval):
+        """ Solve N-S equation with streamfunction vorticity method
+       
+        1. Initialization
+        2. Compute vorticity on interior nodes
+        3. Compute streamfunction on interior nodes
+        4. Compute BCs for vorticity
+        5. Solve Vorticity Transport Equation
+        6. Solve Poisson Equation
+        7. Repeat 5 and 6
+        
+        Args:
+            num_timesteps: the number of total timesteps
+            checkpoint_interval: frequency of calling step postprocess
+        Return:
+            result tuple (u, v, w, psi)
+        """
         velocity_list = []
         w_list =[]
     

@@ -1,18 +1,39 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Dec 20 03:12:39 2022
+
+@author: Xinyang Chen
+"""
 from solvers.poisson_iterative_solver import PointJacobiSolver, GaussSeidelSolver, SORSolver
 from solvers.frac_step_solver import FracStepSolver
-from utils.grid_loader import GridLoader
+from utils.grid_loader import FracStepGridLoader2D
 
 class FracStep():
+    """Fractional Step Method
+    
+    Implementation of fractional step method for N-S equation.
+    See discription and formulas at https://en.wikipedia.org/wiki/Projection_method_(fluid_dynamics)
+    
+    Attributes:
+        u_boundaries: the boundary objects of u
+        v_boundaries: the boundary objects of v
+        p_boundaries: the boundary objects of p
+        method_name: name of the mehod, should be FracStep
+        solver: a fractional step solver
+    """
     def __init__(self, root, metrics = None, step_visualization = None, final_visualization = None, 
                  initial_condition = None):
+        """ Inits FracStep class with root of the project, possion iterative solvers metrics, step and final
+        visulization lambda functions and initial conditions"""
+        
+        # Assert erorr metrics
         assert callable(metrics) and metrics.__name__ == "<lambda>" 
         
-        loader = GridLoader(root)
+        # Load grids
+        loader = FracStepGridLoader2D(root)
         
         domain_dict = {
-            "u": "u_mesh.csv",
-            "v": "v_mesh.csv",
-            "p": "p_mesh.csv"
+            "mesh": "mesh.csv",
         }
         mesh_boundary_dict ={
             "u": ["u"],
@@ -22,12 +43,15 @@ class FracStep():
 
         method_info, mesh_data, _ = loader.load_grid(domain_dict, mesh_boundary_dict)
         
+        # Get boundaries
         self.u_boundaries = mesh_data[3]["u"]
         self.v_boundaries = mesh_data[3]["v"]
         self.p_boundaries = mesh_data[3]["p"]
         
+        # Get method name
         self.method_name = method_info[0]
-        # Poisson iterative solver
+        
+        # Initialize Poisson iterative solver
         solver_name = method_info[1]
 
         if solver_name == "SOR":
@@ -46,6 +70,7 @@ class FracStep():
                                                (mesh_data[2]["p"], mesh_data[2]["p_exterior"]), 
                                                self.p_boundary_process_possion_iterative, float(method_info[2]), metrics)
         
+        # Initialize Solver
         self.solver = FracStepSolver((mesh_data[0]["u"], mesh_data[0]["v"], mesh_data[0]["p"]), 
                                      (mesh_data[1]["dt"], mesh_data[1]["dx"], mesh_data[1]["dy"], 
                                       mesh_data[1]["kinematic_viscosity"], mesh_data[1]["density"]), 
@@ -55,8 +80,18 @@ class FracStep():
                                      poisson_solver, self.extra_computing, step_visualization, final_visualization, initial_condition)
 
     def solve(self, num_timesteps, checkpoint_interval):
+        """ Call solver's solve function
+        Args:
+            num_timesteps: the number of total timesteps
+            checkpoint_interval: frequency of calling step postprocess
+        Return:
+            result from solver, including velocity on two direction and pressure
+        """
         return self.solver.solve(num_timesteps, checkpoint_interval)
     
+    """
+    Boundary processing functions, get variable from solver and process with the boundaries and send back
+    """
     def u_boundary_process(self, u, v, p, t):
         for boundary in self.u_boundaries:
             u = boundary.process(u)
