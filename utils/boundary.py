@@ -2,13 +2,29 @@
 """
 Created on Mon Dec 19 19:02:30 2022
 
+Define boundary classes in this file
+
 @author: Xinyang Chen
 """
 import numpy as np
 
 class BoundaryCondition():
-    def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: tuple, boundary_type = "Base", 
+    """Boundary Condition Base Class
+    
+    A base class for defining boundary conditions. Require overwrite the process, parse_parameters
+    and helper methods in the child class.
+    
+    Attributes:
+        id: the id of the boundary, same as the id representing it in the grid file 
+        name: name of this boundary
+        domain: a slice define the position in grid
+        type: the type of the boundary
+    """
+    def __init__(self, boundary_id: int, boundary_name: str, boundary_domain: tuple, boundary_type = "Base", 
                  boundary_parameters_list = []):
+        """ Inits with boundary_id, boundary_name, boundary_domain and boundary_type. Also provide a string list
+            to inits parameters for this boundary type
+        """
         self.id = boundary_id
         self.name = boundary_name
         self.domain = boundary_domain
@@ -16,10 +32,30 @@ class BoundaryCondition():
         self.parse_parameters(boundary_parameters_list)
         
     def process(self, obj):
+        """ Process the input object with boundary condition
+       
+            In this method, for different boundary conditions, they need to use the slice to get required domain
+            and set the value with its formula and parameters.
+       
+        Args:
+            obj: object to change value at the boundary area
+        Return:
+            processed obj
+        """
+        raise RuntimeWarning("Warning: implement the process method")
         return obj
     
     def parse_parameters(self, boundary_parameters_list):
-        print("Warning: Do not call boundary condition base class")
+        """ Parse the parameters from txt file about boundary condition setting
+       
+            For different boundary conditions, they may have different required parameters. The loader sends
+            a string list containing all required information for parameters. Write a parser to parse and 
+            set parameters.
+       
+        Args:
+            boundary_parameters_list: a string list contains boundary condition parameters
+        """
+        raise RuntimeWarning("Warning: implement the parse_parameters method")
         for parameters in boundary_parameters_list:
             print(parameters + " ")
     
@@ -38,10 +74,34 @@ class BoundaryCondition():
     def get_domain(self):
         return self.domain
     
+    @staticmethod
+    def helper(self):
+        """ Help message
+       
+        Args:
+            format_str: required format to define boundary condition in grid_information txt file
+            formula_str: the formula of boundary condition
+        """
+        raise RuntimeWarning("Warning: implement the static helper method")
+        format_str = "Define boundary declaration format in grid_information.txt"
+        formula_str = "Define boundary process formula in process method"
+        return format_str, formula_str  
+    
     def __str__(self):
         return "ID: " + str(self.id) + ", Name: " +  self.name + ", Type: " + self.type
     
 class ConstCondition(BoundaryCondition):
+    """Const Boundary Condition Class
+    
+        A prototype for boundary with formula: y[domian] = const
+    
+    Attributes:
+        id: the id of the boundary, same as the id representing it in the grid file 
+        name: name of this boundary
+        domain: a slice define the position in grid
+        type: the type of the boundary
+        bias: const number on the right hand side
+    """
     def __init__(self, boundary_id: int, boundary_name: str, boundary_domain: tuple, boundary_parameters_list:list):       
         super(ConstCondition, self).__init__(boundary_id, boundary_name, boundary_domain,  "Const", boundary_parameters_list)
         self.bias = self.parse_parameters(boundary_parameters_list)
@@ -68,6 +128,19 @@ class ConstCondition(BoundaryCondition):
         return super(ConstCondition, self).__str__() + ", Formula: y = " + str(self.bias) 
 
 class LinearCondition(BoundaryCondition):
+    """Linear Boundary Condition Class
+    
+        A prototype for boundary with formula: y[domian] = a*y[domain+offset] + const
+    
+    Attributes:
+        id: the id of the boundary, same as the id representing it in the grid file 
+        name: name of this boundary
+        domain: a slice define the position in grid
+        type: the type of the boundary
+        bias: const number on the right hand side
+        offset: define which node is used to compute boundary value, e.g (1, 0) use the right node next to boundary
+        coefficient: a in the formula
+    """
     def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: tuple, boundary_parameters_list: list):
         super(LinearCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "Linear", boundary_parameters_list)
         self.bias, self.offset, self.coefficient = self.parse_parameters(boundary_parameters_list)
@@ -108,6 +181,20 @@ class LinearCondition(BoundaryCondition):
         return output_str
     
 class LinearCombinationCondition(BoundaryCondition):
+    """Linear Combination Boundary Condition Class
+    
+        A prototype for boundary with formula: y[domian] = a0*x[domain+offset0] + a1*x[domain+offset1] + ... + const
+        Note that x can be y or other variables.
+    
+    Attributes:
+        id: the id of the boundary, same as the id representing it in the grid file 
+        name: name of this boundary
+        domain: a slice define the position in grid
+        type: the type of the boundary
+        bias: const number on the right hand side
+        offset: define which node is used to compute boundary value, e.g (1, 0) use the right node next to boundary
+        coefficient: a0, a1... in the formula
+    """
     def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: tuple, boundary_parameters_list: list):     
         super(LinearCombinationCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "LinearCombination", boundary_parameters_list)
         self.bias, self.quant_coefficient, self.offsets, self.coefficients = self.parse_parameters(boundary_parameters_list)
@@ -165,6 +252,22 @@ class LinearCombinationCondition(BoundaryCondition):
         return  output_str
     
 class NQuantityLinearCombinationCondition(BoundaryCondition):
+    """Multiple Variables Linear Combination Boundary Condition Class
+    
+        A prototype for boundary with formula: y[domian] = a00*x0[domain+offset00] + ... + a0n*x1[domain+offset0n] + 
+        a10*x1[domain+offset10] + ... a1m*x1[domain+offset1m] + ... + const
+        Note that x0, x1, ... can be y or other variables.
+    
+    Attributes:
+        id: the id of the boundary, same as the id representing it in the grid file 
+        name: name of this boundary
+        domain: a slice define the position in grid
+        type: the type of the boundary
+        bias: const number on the right hand side
+        offset: define which node is used to compute boundary value, e.g (1, 0) use the right node next to boundary
+                arrange in shape [((O000, O001), (O010, O011), ....), ((O100, O101), (O110, O111), ...), ...]
+        coefficient: a00, a01... in the formula, arrange in shape [(a00, a01, ....), (a10, a11, ...), ...]
+    """
     def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: tuple, boundary_parameters_list: list):        
         super(NQuantityLinearCombinationCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "NQuantityLinearCombination", boundary_parameters_list)
         self.bias, self.quant_coefficients, self.offsets, self.coefficients = self.parse_parameters(boundary_parameters_list)
@@ -245,6 +348,18 @@ class NQuantityLinearCombinationCondition(BoundaryCondition):
         return  output_str
     
 class LinearSpacialCondition(BoundaryCondition):
+    """Linear Spacial Boundary Condition Class
+    
+        A prototype for boundary with formula: y[i, j] = a0*i + a1*j + const 
+    
+    Attributes:
+        id: the id of the boundary, same as the id representing it in the grid file 
+        name: name of this boundary
+        domain: a slice define the position in grid
+        type: the type of the boundary
+        bias: const number on the right hand side
+        coefficient: a0, a1 in the formula
+    """
     def __init__(self, boundary_id: int, boundary_name: str,  boundary_domain: tuple, boundary_parameters_list: list):        
         super(LinearSpacialCondition, self).__init__(boundary_id, boundary_name, boundary_domain, "LinearSpacial", boundary_parameters_list)
         self.bias, self.coefficients = self.parse_parameters(boundary_parameters_list)

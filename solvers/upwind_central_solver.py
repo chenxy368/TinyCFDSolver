@@ -2,11 +2,28 @@
 """
 Created on Thu Dec 29 05:24:50 2022
 
-@author: HP
+@author: Xinyang Chen
 """
 import numpy as np
 
 class UpwindCentral2DSolver():
+    """Upwind Central Scheme Method
+    
+    Implementation of upwind central scheme Method for 2D advection diffusion equation. Solver is called in method.
+    See discription and formulas at https://en.wikipedia.org/wiki/Upwind_scheme
+    
+    Attributes:
+        shape: shape of the grid
+        dt, dx, dy: timestep length, grid length
+        coefficients: coefficient of different terms
+        interior: interior slice of grid
+        exterior: exterior slice of grid
+        boundary_process: boundaries process functions
+        extra_computing: extra computing at the end of each timestep
+        step_visualization: visualization function at each timestep
+        final_visualization: final visualization function
+        initial_condition: initial conditions
+    """
     def __init__(self, shape: tuple, params: list, domains: list, boundary_process,
                  extra_computing = None, step_visualization = None, final_visualization = None, 
                  initial_condition = None):
@@ -25,6 +42,22 @@ class UpwindCentral2DSolver():
         self.initial_condition = initial_condition
     
     def compute_upwind_param(self, params: list):
+        """ Compute coeffiecients of terms based on upwind scheme
+       
+            X[i, j] = self.coefficients[0] * X[i, j] + 
+                      self.coefficients[1] * X[i-1, j] +
+                      self.coefficients[2] * X[i, j-1] +
+                      self.coefficients[3] * X[i+1, j] +
+                      self.coefficients[4] * X[i, j+1]
+            keep the advection term upwind
+            see referenc at https://computationalthinking.mit.edu/Spring21/2d_advection_diffusion/
+            note that all coeffcient are const in this method (linear method)
+        
+        Args:
+            params: list [dx, dy, dt, u, v, mu_x, mu_y]
+        Return:
+            result tuple (u, v, p)
+        """
         dx = params[0]
         dy = params[1]
         dt = params[2]
@@ -54,10 +87,17 @@ class UpwindCentral2DSolver():
         return dt, dx, dy, (1 - (u / abs(u)) * ax - (v / abs(v)) * ay - 2 * betax - 2 * betay, \
                 coefficient2, coefficient3, coefficient4, coefficient5)
             
-    def set_params(self, params: list):
-        self.dt, self.dx, self.dy, self.coefficients = self.compute_upwind_param(params)
     
     def solve(self, num_timesteps, checkpoint_interval):
+        """ Solve advection diffusion equation with upwind central scheme method
+        
+        Args:
+            num_timesteps: the number of total timesteps
+            checkpoint_interval: frequency of calling step postprocess
+        Return:
+            result X
+        """
+        
         # Initialize 
         X_list = []
         X = np.zeros([self.shape[0], self.shape[1]], dtype = float)

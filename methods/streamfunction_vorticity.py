@@ -29,6 +29,8 @@ class StreamFunctionVorticity():
     """
     def __init__(self, root, metrics = None, step_visualization = None, final_visualization = None,
                  initial_condition = None):
+        """ Inits StreamFunctionVorticity class with root of the project,  possion iterative solvers metrics, 
+        step and final visulization lambda functions and initial conditions"""
         assert callable(metrics) and metrics.__name__ == "<lambda>" 
         
         # Load grid

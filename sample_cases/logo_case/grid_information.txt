@@ -6,7 +6,7 @@ dy 0.1
 dt 0.001
 density 1000
 kinematic_viscosity 0.001
-inflow_speed 0.1
+inflow_speed 0.05
 DOMAIN
 mesh -1
 Ghost 1 2 3 4
@@ -21,14 +21,14 @@ u 0 Wall_Dirichlet Const 0
 u 5 Boundary_Dirichlet Const 0
 u 2 Down_Ghost_Neumann Linear -1 0 1 0
 u 1 Up_Ghost_Neumann Linear -1 0 -1 0
-u 6 Inlet_Dirichlet Const inflow_speed
-u 7 Outlet_Neumann Linear 1 0 -1 0
+u 6 Inlet_Dirichlet Const 0
+u 7 Outlet_Ghost_Neumann Linear 1 0 -1 0
 v 0 Wall_Dirichlet Const 0
 v 5 Boundary_Dirichlet Const 0
 v 3 Left_Ghost_Neumann Linear -1 1 0 0
 v 4 Right_Ghost_Neumann Linear -1 -1 0 0
-v 6 Inlet_Dirichlet Const 0
-v 7 Outlet_Neumann Linear 1 0 -1 0
+v 6 Inlet_Dirichlet Const inflow_speed
+v 7 Outlet_Ghost_Neumann Linear 1 0 -1 0
 p 0 Wall_Dirichlet Const 0
 p 5 Boundary_Dirichlet Const 0
 p 2 Down_Ghost_Neumann Linear 1 0 1 0

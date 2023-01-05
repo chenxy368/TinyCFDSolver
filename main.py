@@ -16,13 +16,13 @@ RANGE = lambda array1, array2, domain: np.max(np.abs(array1[domain] - array2[dom
 def main(method):
     if method == "Frac_Step":
         ploter = lambda u, v, velocity, pressure, dx, dy, dt, t: (plot_one_contourf(velocity, dx, dy, "velocity magnitude at " + str(round((t + 1) * dt, 3)) + "s", "velocity[m/s]", 0.0, 0.07), 
-                                          plot_one_contourf((np.transpose(pressure)), dx, dy, "pressure at " + str(round((t + 1) * dt, 3)) + "s", "pressure[Pa]", 0.0, 5000.0), 
+                                          plot_one_contourf((np.transpose(pressure)), dx, dy, "pressure at " + str(round((t + 1) * dt, 3)) + "s", "pressure[Pa]", 0.0, 7000.0), 
                                           plot_one_streamlines(u.transpose(), v.transpose(), dx, dy, 'Streamlines at ' + str(round((t + 1) * dt, 3)) + 's'))        
 
         animator = lambda velocity, pressure, dx, dy: (animate(velocity, dx, dy, "velocity magnitude", "velocity[m/s]", 0.0, 0.07),
-                    animate(pressure, dx, dy, "pressure", "pressure[Pa]", 0, 5000.0))
-        method = FracStep("sample_cases/origin_case", RANGE, ploter, animator)
-        res = method.solve(100, 10)
+                    animate(pressure, dx, dy, "pressure", "pressure[Pa]", 0, 7000.0))
+        method = FracStep("sample_cases/logo_case", RANGE, ploter, animator)
+        res = method.solve(100, 3)
     elif method == "SFV":
         ploter = lambda u, v, velocity, w, dx, dy, dt, t: (plot_one_contourf(velocity, dx, dy, "velocity magnitude at " + str(round((t + 1) * dt, 3)) + "s", "velocity[m/s]", 0.0, 6.0),
                                           plot_one_streamlines(u.transpose(), v.transpose(), dx, dy, 'Streamlines at ' + str(round((t + 1) * dt, 3)) + 's'))
@@ -30,7 +30,7 @@ def main(method):
         animator = lambda velocity, w, dx, dy: (animate(velocity, dx, dy, "velocity magnitude", "velocity[m/s]", 0.0, 6.0), 
                                                 plot_one_contour((w[len(w) - 1]), dx, dy, "vorticity at final"))
 
-        method = StreamFunctionVorticity("sample_cases/driven_cavity_case", MAE, ploter, animator)
+        method = StreamFunctionVorticity("sample_cases/flow_obstacle_case", MAE, ploter, animator)
         res = method.solve(int(0.2/0.002), 10)
     elif method == "PoissonIterative":
         ploter = lambda X, dx, dy: (plot_one_contourf(X.transpose(), dx, dy, "temperature", "temperature[◦C]", 0.0, 1.0))
@@ -65,4 +65,4 @@ def main(method):
         res = method.solve(int(0.05/0.001), 3)
         
 if __name__ == "__main__":
-    X = main("PoissonIterative")
+    main("Frac_Step")

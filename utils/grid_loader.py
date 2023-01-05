@@ -2,6 +2,8 @@
 """
 Created on Tue Dec 20 03:12:39 2022
 
+Define grid loader in this file
+
 @author: Xinyang Chen
 """
 import numpy as np

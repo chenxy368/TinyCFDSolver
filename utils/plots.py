@@ -2,7 +2,7 @@
 """
 Created on Mon Dec 19 02:39:05 2022
 
-@author: HP
+@author: Xinyang Chen
 """
 import numpy as np
 import matplotlib.animation as animation

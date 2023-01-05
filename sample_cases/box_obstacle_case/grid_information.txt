@@ -8,9 +8,14 @@ density 1000
 kinematic_viscosity 0.001
 inflow_speed 0.1
 DOMAIN
-u -1
-v -1
-p -1
+mesh -1
+Ghost 1 2 3 4
+Expand_u 0 1 2 6 7 
+Expand_v 0 3 4 6 7 
+Translate u 3 5
+Translate u 4 5
+Translate v 1 5
+Translate v 2 5
 BOUNDARY
 u 0 Wall_Dirichlet Const 0
 u 5 Boundary_Dirichlet Const 0
