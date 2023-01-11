@@ -3,7 +3,6 @@ A multi-domain solver with several finite difference methods solver by Xinyang C
 <p align="center">
   <img width="460" height="300" src="sample_cases/frac_step/logo_case/result/pressure.gif">
 </p>
-++++
 
 
 ## Overview
