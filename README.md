@@ -21,8 +21,42 @@ pip install -r requirements.txt
 ```
 
 ## Demos
-Fractional step method for N-S equation:
+Fractional step method solving N-S equation:
 <p align="center">
   <img width="345" height="225" src="sample_cases/frac_step/box_obstacle_case/result/speed.gif">
   <img width="345" height="225" src="sample_cases/frac_step/box_obstacle_case/result/pressure.gif">
+</p>
+
+<p align="center">
+  <img width="345" height="225" src="sample_cases/frac_step/half_case/result/speed.gif">
+  <img width="345" height="225" src="sample_cases/frac_step/half_case/result/pressure.gif">
+</p>
+
+Stream function vorticity method solving N-S equation:
+<p align="center">
+  <img width="345" height="225" src="sample_cases/SFV/driven_cavity_case/result/speed.gif">
+  <img width="345" height="225" src="sample_cases/SFV/flow_obstacle_case/result/speed.gif">
+</p>
+
+Poisson iterative solver solving heat diffusion:
+<p align="center">
+  <img width="345" height="225" src="sample_cases/poisson_iterative/heat_diffusion_case/result/temperature.png">
+</p>
+
+Upwind central scheme solving advection diffusion equation:
+<p align="center">
+  <img width="345" height="225" src="sample_cases/upwind_central/advection_diffusion_case/result/temperature.gif">
+  <img width="345" height="225" src="sample_cases/upwind_central/advection_diffusion_init_case/result/temperature.gif">
+</p>
+
+Crank Nicolson implicit method solving diffusion equation:
+<p align="center">
+  <img width="345" height="225" src="sample_cases/crank_nicolson/diffusion_CK_case/result/temperature.gif">
+  <img width="345" height="225" src="sample_cases/crank_nicolson/diffusion_CK_obstacle_case/result/temperature.gif">
+</p>
+
+ADI method solving diffusion equation:
+<p align="center">
+  <img width="345" height="225" src="sample_cases/ADI/diffusion_ADI_case/result/temperature.gif">
+  <img width="345" height="225" src="sample_cases/ADI/diffusion_ADI_obstacle_case/result/temperature.gif">
 </p>
