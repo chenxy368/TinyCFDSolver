@@ -1,10 +1,14 @@
 ﻿# TinyCFDSolver
 A multi-domain solver with several finite difference methods solver by Xinyang CHEN(Thanks Wenzhuo XU's help for fractional step method).  
+ifdef::env-github[]
 ++++
 <p align="center">
   <img width="460" height="300" src="sample_cases/frac_step/logo_case/result/pressure.gif">
 </p>
 ++++
+endif::[]
+
+
 ## Overview
 The TinyCFDSolver's solvers are implemented in solvers folder. The methods (mediator classes) are implemented in methods folder. Boundary classes, plot methods and grid loaders are in utils folder. Several example cases can be found in the sample cases folder. To test the cases, the command line should follow:
 ```shell
