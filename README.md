@@ -1,5 +1,5 @@
 ﻿# TinyCFDSolver
-A multi-domain solver with several finite difference methods solver by Xinyang CHEN(Thanks Wenzhuo XU's help for fractional step method).  
+A tiny python computational fluid dynamics solver with several finite difference methods by Xinyang CHEN(Thanks Wenzhuo XU's help for fractional step method).  
 <p align="center">
   <img width="460" height="300" src="sample_cases/frac_step/logo_case/result/pressure.gif">
 </p>
