@@ -23,6 +23,6 @@ pip install -r requirements.txt
 ## Demos
 Fractional step method for N-S equation:
 <p align="center">
-  <img width="230" height="150" src="sample_cases/frac_step/box_obstacle_case/result/speed.gif">
-  <img width="230" height="150" src="sample_cases/frac_step/box_obstacle_case/result/pressure.gif">
+  <img width="345" height="225" src="sample_cases/frac_step/box_obstacle_case/result/speed.gif">
+  <img width="345" height="225" src="sample_cases/frac_step/box_obstacle_case/result/pressure.gif">
 </p>
