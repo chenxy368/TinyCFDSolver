@@ -1,5 +1,5 @@
 ﻿# TinyCFDSolver
-A multi-domain solver with several finite difference methods solver by Xinyang CHEN(Thanks Wenzhuo XU's help for fractional step method).
+A multi-domain solver with several finite difference methods solver by Xinyang CHEN(Thanks Wenzhuo XU's help for fractional step method).  
 ![LOGO](sample_cases/frac_step/logo_case/result/pressure.gif)
 ![LOGO](sample_cases/frac_step/logo_case/result/speed.gif)
 ## Overview
