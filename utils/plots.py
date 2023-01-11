@@ -68,7 +68,6 @@ def animate(arrays, dx, dy, title, colorbar_label, vmin, vmax):
         ax.set_xlabel('x/m',fontsize = 14)
         ax.set_ylabel('y/m',fontsize = 14)
         ax.set_title(title)
-    
-    ani = animation.FuncAnimation(fig, frame, frames = len(arrays), interval = 1)
+    ani = animation.FuncAnimation(fig, frame, frames = len(arrays), interval = 100)
     ani.save(title + '.gif', fps=10)
     plt.show()

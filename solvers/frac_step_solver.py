@@ -175,7 +175,7 @@ class FracStepSolver():
                 velocity = np.sqrt(u_comp ** 2 + v_comp ** 2)
                 velocity = velocity.transpose()
                 velocity_list.append(velocity)
-                pressure_list.append((np.transpose(p)))
+                pressure_list.append(np.transpose(p).copy())
                 
                 if self.step_visualization is not None:
                     self.step_visualization(u_comp, v_comp, velocity, p, self.dx, self.dy, self.dt, t)

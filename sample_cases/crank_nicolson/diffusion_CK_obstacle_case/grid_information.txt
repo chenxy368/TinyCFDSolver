@@ -1,0 +1,22 @@
+METHOD
+CrankNicolson2D
+PARAMETER
+dx 0.01
+dy 0.01
+dt 0.001
+alpha 0.004*3600/37.1/9
+betax (0.004*3600/37.1/9)*0.001/2/0.01/0.01
+betay (0.004*3600/37.1/9)*0.001/2/0.01/0.01
+DOMAIN
+mesh -1
+BOUNDARY
+X 0 Heat_Source ImplicitLinear2D _ _ _ _ 0 0 -1 1650*betay 1650
+X 1 Wall ImplicitLinear2D 0 0 1 300*betax _ _ _ _ 300
+X 2 Wall ImplicitLinear2D _ _ _ _ 0 0 1 0 0
+X 3 Wall ImplicitLinear2D 0 0 -1 300*betax _ _ _ _ 300 
+X 4 Wall Const 500
+X 5 Wall ImplicitLinear2D 0 0 -1 500*betax 0 0 1 500*betay 500
+X 6 Wall ImplicitLinear2D 0 0 1 500*betax 0 0 1 500*betay 500
+X 7 Wall ImplicitLinear2D 0 0 -1 500*betax _ _ _ _ 500
+X 8 Wall ImplicitLinear2D 0 0 1 500*betax _ _ _ _ 500
+X 9 Wall ImplicitLinear2D _ _ _ _ 0 0 1 500*betay 500

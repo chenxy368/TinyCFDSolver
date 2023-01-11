@@ -21,13 +21,19 @@ class FracStep():
         method_name: name of the mehod, should be FracStep
         solver: a fractional step solver
     """
-    def __init__(self, root, metrics = None, step_visualization = None, final_visualization = None, 
-                 initial_condition = None):
-        """ Inits FracStep class with root of the project, possion iterative solvers metrics, step and final
-        visulization lambda functions and initial conditions"""
+    def __init__(self, root, lambda_list: list, initial_condition = None):
+        """ Inits FracStep class with root of the project, lambda functions list and initial conditions"""
         
         # Assert erorr metrics
-        assert callable(metrics) and metrics.__name__ == "<lambda>" 
+        assert len(lambda_list) > 0 and callable(lambda_list[0]) and lambda_list[0].__name__ == "<lambda>" 
+        
+        metrics = lambda_list[0]
+        step_visualization = None
+        final_visualization = None
+        if len(lambda_list) > 1:
+            step_visualization = lambda_list[1]
+        if len(lambda_list) > 2:
+            final_visualization = lambda_list[2]
         
         # Load grids
         loader = FracStepGridLoader2D(root)
@@ -79,15 +85,15 @@ class FracStep():
                                      (self.u_boundary_process, self.v_boundary_process, self.p_boundary_process_frac_step),
                                      poisson_solver, self.extra_computing, step_visualization, final_visualization, initial_condition)
 
-    def solve(self, num_timesteps, checkpoint_interval):
+    def solve(self, params: list): 
         """ Call solver's solve function
         Args:
-            num_timesteps: the number of total timesteps
-            checkpoint_interval: frequency of calling step postprocess
+            params[0]: num_timesteps, the number of total timesteps
+            params[1]: checkpoint_interval, frequency of calling step postprocess
         Return:
-            result from solver, including velocity on two direction and pressure
+            result from solver
         """
-        return self.solver.solve(num_timesteps, checkpoint_interval)
+        return self.solver.solve(int(params[0]), params[1])
     
     """
     Boundary processing functions, get variable from solver and process with the boundaries and send back

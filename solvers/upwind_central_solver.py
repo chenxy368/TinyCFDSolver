@@ -105,6 +105,7 @@ class UpwindCentral2DSolver():
             X[...] = self.initial_condition[...]
 
         for t in range(num_timesteps):
+            print("Timestep: " + str(t))
             # Impose boundary conditions
             X = self.boundary_process(X, t)
             
@@ -117,7 +118,7 @@ class UpwindCentral2DSolver():
             
             self.extra_computing(X, t)
             if self.final_visualization is not None and (t + 1) % checkpoint_interval == 0:
-                X_list.append((np.transpose(X)))
+                X_list.append(np.transpose(X).copy())
                 
                 if self.step_visualization is not None:
                     self.step_visualization(X, self.dx, self.dy, self.dt, t)
@@ -125,5 +126,5 @@ class UpwindCentral2DSolver():
         if self.final_visualization is not None:
             self.final_visualization(X_list, self.dx, self.dy)
             
-        return X
+        return X_list
     

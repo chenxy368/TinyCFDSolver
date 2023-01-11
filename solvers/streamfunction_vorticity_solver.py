@@ -112,6 +112,7 @@ class StreamFunctionVorticitySolver():
         # STEP 5 & 6: Solve
         # ------------------------------------------------------
         for t in range(num_timesteps):
+            print('Timestep: ', t)
             u = self.u_boundary_process(u, v, psi, w, t)
             v = self.v_boundary_process(u, v, psi, w, t)
 
@@ -166,7 +167,7 @@ class StreamFunctionVorticitySolver():
                 velocity = np.sqrt(u ** 2 + v ** 2)
                 velocity = velocity.transpose()
                 velocity_list.append(velocity)
-                w_list.append((np.transpose(w)))
+                w_list.append(np.transpose(w).copy())
                 
                 if self.step_visualization is not None:
                     self.step_visualization(u, v, velocity, w, self.dx, self.dy, self.dt, t)

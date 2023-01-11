@@ -19,10 +19,18 @@ class UpwindCentral2D():
         method_name: name of the mehod, should be UpwindCentral
         solver: an upwind central scheme solver
     """
-    def __init__(self, root, step_visualization = None, final_visualization = None, 
-                 initial_condition = None):
-        """ Inits UpwindCentral2D class with root of the project, step and final visulization lambda functions and 
+    def __init__(self, root, lambda_list: list, initial_condition = None):
+        """ Inits UpwindCentral2D class with root of the project, lambda functions list and 
         initial conditions"""
+        
+        step_visualization = None
+        final_visualization = None
+        if len(lambda_list) > 0:
+            step_visualization = lambda_list[0]
+        if len(lambda_list) > 1:
+            final_visualization = lambda_list[1]
+        
+        # Load Grid
         loader = GridLoader(root)
         
         domain_dict = {
@@ -47,15 +55,15 @@ class UpwindCentral2D():
                                             self.boundary_process, self.extra_computing,
                                             step_visualization, final_visualization, initial_condition)  
     
-    def solve(self, num_timesteps, checkpoint_interval): 
+    def solve(self, params: list): 
         """ Call solver's solve function
         Args:
-            num_timesteps: the number of total timesteps
-            checkpoint_interval: frequency of calling step postprocess
+            params[0]: num_timesteps, the number of total timesteps
+            params[1]: checkpoint_interval, frequency of calling step postprocess
         Return:
             result from solver
         """
-        return self.solver.solve(num_timesteps, checkpoint_interval)
+        return self.solver.solve(int(params[0]), params[1])
     
     """
     Boundary processing functions, get variable from solver and process with the boundaries and send back

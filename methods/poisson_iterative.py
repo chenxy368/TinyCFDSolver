@@ -7,6 +7,7 @@ Created on Wed Dec 28 03:58:31 2022
 from solvers.poisson_iterative_solver import PointJacobiSolver, GaussSeidelSolver, SORSolver
 from utils.grid_loader import GridLoader
 import numpy as np
+import os
 
 class PoissonIterative():
     """Poission iterative solving Method
@@ -21,12 +22,16 @@ class PoissonIterative():
         method_name: name of the mehod, should be PoissonIterative
         solver: a poisson iterative solver
     """
-    def __init__(self, root, metrics = None, final_visualization = None, initial_condition = None):
-        """ Inits PoissonIterative class with root of the project, possion iterative solvers metrics, step
-        visulization lambda function and initial condition"""
+    def __init__(self, root, lambda_list: list, initial_condition = None):
+        """ Inits PoissonIterative class with root of the project, lambda functions list and initial condition"""
         
         # Assert erorr metrics
-        assert callable(metrics) and metrics.__name__ == "<lambda>" 
+        assert len(lambda_list) > 0 and callable(lambda_list[0]) and lambda_list[0].__name__ == "<lambda>" 
+        
+        metrics = lambda_list[0]
+        final_visualization = None
+        if len(lambda_list) > 1:
+            final_visualization = lambda_list[1]
         
         # Load grid
         loader = GridLoader(root)
@@ -69,17 +74,19 @@ class PoissonIterative():
                                                self.boundary_process, float(method_info[2]), metrics, 
                                                final_visualization, initial_condition)
 
-    def solve(self, f):
+    def solve(self, params: list):
         """ Call solver's solve function
         Args:
-            f: the right hand side of Poisson equation
+            params: the right hand side of Poisson equation, an float or a path to numpy array
         Return:
             result from solver, a two dimensional numpy array
         """
-        if type(f) is not np.ndarray:
-            f = np.full((self.shape[0], self.shape[1]), float(f), dtype = float)
+        if type(params[0]) is not np.ndarray:
+            f = np.full((self.shape[0], self.shape[1]), float(params[0]), dtype = float)
         else:
-            assert f.shape == self.shape
+            if not os.path.exists(params[0]):
+                raise RuntimeError(params[0] + "do not exist")
+            f = np.load(params[0])
             
         return self.solver.solve(f)
     

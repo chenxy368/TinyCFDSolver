@@ -5,64 +5,64 @@ Created on Tue Dec 20 03:12:39 2022
 @author: Xinyang Chen
 """
 import numpy as np
+import sys
+import os
+import argparse
 
 from methods import FracStep, StreamFunctionVorticity, PoissonIterative, UpwindCentral2D, CrankNicolson2D, ADI
-from utils import (plot_one_contourf, plot_one_contour, plot_one_streamlines, animate)
 
+method_dict = {
+        "FracStep": FracStep,
+        "SFV": StreamFunctionVorticity, 
+        "PoissonIterative": PoissonIterative,
+        "UpwindCentral2D": UpwindCentral2D, 
+        "CrankNicolson2D": CrankNicolson2D,
+        "ADI": ADI
+    }
 
-MAE = lambda array1, array2, domain: np.linalg.norm(array1[domain] - array2[domain])
-RANGE = lambda array1, array2, domain: np.max(np.abs(array1[domain] - array2[domain]))
-
-def main(method):
-    if method == "Frac_Step":
-        ploter = lambda u, v, velocity, pressure, dx, dy, dt, t: (plot_one_contourf(velocity, dx, dy, "velocity magnitude at " + str(round((t + 1) * dt, 3)) + "s", "velocity[m/s]", 0.0, 0.07), 
-                                          plot_one_contourf((np.transpose(pressure)), dx, dy, "pressure at " + str(round((t + 1) * dt, 3)) + "s", "pressure[Pa]", 0.0, 7000.0), 
-                                          plot_one_streamlines(u.transpose(), v.transpose(), dx, dy, 'Streamlines at ' + str(round((t + 1) * dt, 3)) + 's'))        
-
-        animator = lambda velocity, pressure, dx, dy: (animate(velocity, dx, dy, "velocity magnitude", "velocity[m/s]", 0.0, 0.07),
-                    animate(pressure, dx, dy, "pressure", "pressure[Pa]", 0, 7000.0))
-        method = FracStep("sample_cases/logo_case", RANGE, ploter, animator)
-        res = method.solve(100, 3)
-    elif method == "SFV":
-        ploter = lambda u, v, velocity, w, dx, dy, dt, t: (plot_one_contourf(velocity, dx, dy, "velocity magnitude at " + str(round((t + 1) * dt, 3)) + "s", "velocity[m/s]", 0.0, 6.0),
-                                          plot_one_streamlines(u.transpose(), v.transpose(), dx, dy, 'Streamlines at ' + str(round((t + 1) * dt, 3)) + 's'))
-
-        animator = lambda velocity, w, dx, dy: (animate(velocity, dx, dy, "velocity magnitude", "velocity[m/s]", 0.0, 6.0), 
-                                                plot_one_contour((w[len(w) - 1]), dx, dy, "vorticity at final"))
-
-        method = StreamFunctionVorticity("sample_cases/flow_obstacle_case", MAE, ploter, animator)
-        res = method.solve(int(0.2/0.002), 10)
-    elif method == "PoissonIterative":
-        ploter = lambda X, dx, dy: (plot_one_contourf(X.transpose(), dx, dy, "temperature", "temperature[◦C]", 0.0, 1.0))
-        method = PoissonIterative("sample_cases/heat_diffusion_case", MAE, ploter)
-        res = method.solve(0)
-    elif method == "UpwindCentral2D":
-        init_path = "sample_cases/advection_diffusion_init_case/init.npy"
-        init = np.load(init_path)
-        ploter = lambda X, dx, dy, dt, t: (plot_one_contourf(X.transpose(), dx, dy, "temperature at " + str(round((t + 1) * dt, 3)) + "s", "temperature[$^\circ$C]", 0.0, 1.05))        
-
-        animator = lambda X, dx, dy: (plot_one_contourf(X[len(X) - 1], dx, dy, "temperature", "temperature[$^\circ$C]", 0.0, 1.05))
-        method = UpwindCentral2D("sample_cases/advection_diffusion_init_case", None, animator, init)
-        res = method.solve(int(4/0.002), 100)
-    
-        #np.save("sample_cases/advection_diffusion_init_case/res.npy", res)
-    elif method == "CrankNicolson2D":
-        init_path = "sample_cases/diffusion_CK_case/init.npy"
-        init = np.load(init_path)
-
-        ploter = lambda X, dx, dy, dt, t: (plot_one_contourf(X.transpose(), dx, dy, "temperature at " + str(round((t + 1) * dt, 3)) + "s", "temperature[K]", 0.0, 1650.0))
-
-        animator = lambda X, dx, dy: (animate(X, dx, dy, "temperature", "temperature[K]", 0.0, 1650.0))
-        method = CrankNicolson2D("sample_cases/diffusion_CK_case", ploter, animator, init)
-
-        res =  method.solve(int(0.05/0.001), 3)
-        #np.save("sample_cases/diffusion_CK_case/res.npy", res)
-    elif method == "ADI":
-        ploter = lambda X, dx, dy, dt, t: (plot_one_contourf(X.transpose(), dx, dy, "temperature at " + str(round((t + 1) * dt, 3)) + "s", "temperature[K]", 0.0, 1650.0))
-
-        animator = lambda X, dx, dy: (animate(X, dx, dy, "temperature", "temperature[K]", 0.0, 1650.0))
-        method = ADI("sample_cases/diffusion_ADI_case", ploter, animator)
-        res = method.solve(int(0.05/0.001), 3)
+def main(path, params, save=False):
+    method_name = "FracStep"
+    line_num = 0
+    with open(path + "/grid_information.txt") as file:
+        for line in file:
+            if line_num == 0 and line.split()[0] != "METHOD":
+                raise RuntimeError("Incorrect format")
+                
+            if line_num == 0:
+                line_num += 1
+                continue
+            
+            str_list = line.split()
+            if str_list[0] not in method_dict:
+                raise RuntimeError("Unknown Method")
+            method_name = str_list[0]
+            break
         
+    init_path = path + "/init.npy"
+    init = None
+    if os.path.exists(init_path):
+        init = np.load(init_path)
+    
+    sys.path.append(path)
+    from lambda_functions import lambda_list
+    method = method_dict[method_name](path, lambda_list, init)        
+    sys.path.remove(path)
+    res = method.solve(params)
+    
+    if save:
+        np.save(path + "/res.npy", res)
+    
+def parse_opt():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--path', type = str, default = '', help = 'project path')
+    parser.add_argument('--params', nargs='*', type=float, default=0.0, help='parameters for solve')
+    parser.add_argument('--save', action='store_true', help='save result or not')
+
+    opt = parser.parse_args()
+    return opt
+
+
 if __name__ == "__main__":
-    main("Frac_Step")
+    opt = parse_opt()
+    main(**vars(opt))
+    #main("sample_cases/ADI/diffusion_ADI_obstacle_case", (int(0.3/0.001), 5), False)

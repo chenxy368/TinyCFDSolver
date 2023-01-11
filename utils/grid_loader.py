@@ -14,9 +14,10 @@ from utils.boundary import ConstCondition, LinearCondition, \
                            NQuantityLinearCombinationCondition, \
                            LinearSpacialCondition
                            
-from utils.implicit_boundary import FirstOrderCondition2D, FirstOrderCondition1D
+from utils.implicit_boundary import ImplicitLinearCondition2D, ImplicitLinearCondition2DTime
 
 """
+Add all boundary classes and their keyword in grid_information.txt in this dictionary
 Dictionary of implicit and explicit boundary classes:
     Key: Type name
     Value: Class init function
@@ -26,8 +27,8 @@ boundary_classes = {"Const": ConstCondition,
                     "LinearCombination": LinearCombinationCondition, 
                     "NQuantityLinearCombination": NQuantityLinearCombinationCondition,
                     "LinearSpacial": LinearSpacialCondition}
-implcit_boundry_classes = {"FirstOrder2D": FirstOrderCondition2D,
-                           "FirstOrder1D": FirstOrderCondition1D}
+implcit_boundry_classes = {"ImplicitLinear2D": ImplicitLinearCondition2D,
+                           "ImplicitLinear2DTime": ImplicitLinearCondition2DTime}
 
 
 class GridLoader():
@@ -204,13 +205,22 @@ class GridLoader():
             raise RuntimeError('Boundary Type Error')
         
         # Substitude parameter with num
-        for index in range(len(boundary_params)):
-            for key in parameters_dict:
-                if key in boundary_params[index] and re.match('^[-0-9+*/.()]+$', boundary_params[index].replace(key, parameters_dict[key])):
-                    boundary_params[index] = boundary_params[index].replace(key, parameters_dict[key])
 
-            boundary_params[index] = float(eval(boundary_params[index]))
-        
+        for index in range(len(boundary_params)):
+            if re.findall('\([.0-9.,]+[.0-9.]\)', boundary_params[index]) != []:
+                param_list = re.findall('\([.0-9.,]+[.0-9.]\)', boundary_params[index])[0]
+                param_list = param_list[1:len(param_list)-1].split(",")
+                start = re.search('\([.0-9.,]+[.0-9.]\)', boundary_params[index]).span()[0]
+                end = re.search('\([.0-9.,]+[.0-9.]\)', boundary_params[index]).span()[1]
+                prefix = boundary_params[index][0:start]
+                suffix = boundary_params[index][end:]
+                
+                boundary_params[index] = []
+                for param in param_list:
+                    boundary_params[index].append(self.compute_boundary_param(prefix + param + suffix, parameters_dict))
+            else:
+                boundary_params[index] = self.compute_boundary_param(boundary_params[index], parameters_dict)
+
         # Create boundary
         if boundary_information[3] in boundary_classes:
             new_boundary = boundary_classes[boundary_information[3]](boundary_id, boundary_name, boundary_domain, boundary_params)
@@ -220,6 +230,18 @@ class GridLoader():
         print(new_boundary)
         
         return new_boundary
+    
+    def compute_boundary_param(self, boundary_param, parameters_dict):
+        """ 
+        Substitude parameter string with num and eval
+        """
+        for key in parameters_dict:
+            if key in boundary_param and re.match('^[-0-9+*/.()]+$', boundary_param.replace(key, parameters_dict[key])):
+                boundary_param = boundary_param.replace(key, parameters_dict[key])
+
+        if re.match('^[-0-9+*/.()]+$', boundary_param):          
+            boundary_param = float(eval(boundary_param))
+        return boundary_param
     
     def load_grid(self, domain_dict: dict, mesh_boundary_dict: dict):
         """ Load grids arrays and generate boundary classes
