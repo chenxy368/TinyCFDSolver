@@ -19,3 +19,10 @@ python main.py --path sample_cases/ADI/diffusion_ADI_obstacle_case --params 30 5
 ```shell
 pip install -r requirements.txt
 ```
+
+## Demos
+Fractional step method for N-S equation:
+<p align="center">
+  <img width="460" height="300" src="sample_cases/frac_step/box_obstacle_case/result/speed.gif">
+  <img width="460" height="300" src="sample_cases/frac_step/box_obstacle_case/result/pressure.gif">
+</p>
