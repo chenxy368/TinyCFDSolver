@@ -125,3 +125,91 @@ These slides briefly show how this project is designed and implemented.
 <p align="center">
   <img width="800" height="450" src="readme_image/slide5.png">
 </p>
+
+## Implement New Boundary
+E.g. const boundary class
+1. Define the form in the grid_information.txt, and how this boundary class modify the target array.
+```shell
+# Group GridID Name Type Params
+X 1 Wall_Dirichlet Const 0
+arr[boundary_postion] = const
+```
+2. Implement a new boudary class(inherit a base boundary class)
+```shell
+class ConstCondition(BoundaryCondition):
+    def __init__(self, boundary_id: int, boundary_name: str, boundary_domain: tuple, boundary_parameters_list:list):       
+        super(ConstCondition, self).__init__(boundary_id, boundary_name, boundary_domain,  "Const", boundary_parameters_list)
+        self.bias = self.parse_parameters(boundary_parameters_list)
+        
+    def process(self, obj):
+        obj[self.domain] = self.bias
+        return obj
+    
+    def parse_parameters(self, boundary_parameters_list):
+        assert len(boundary_parameters_list) == 1
+        
+        return boundary_parameters_list[0]
+        
+    def set_bias(self, bias:float):
+        self.bias = bias
+
+    @staticmethod
+    def helper(self):
+        format_str = "ConstCondition format: Group ID Name Const Bias"
+        formula_str = "y[i, j] = Bias"
+        return format_str, formula_str    
+
+    def __str__(self):
+        return super(ConstCondition, self).__str__() + ", Formula: y = " + str(self.bias) 
+```
+3. Add to the boundary dictionary in gridloader.py
+```shell
+boundary_classes = {"Const": ConstCondition,
+                    "Linear": LinearCondition, 
+                    "LinearCombination": LinearCombinationCondition, 
+                    "NQuantityLinearCombination": NQuantityLinearCombinationCondition,
+                    "LinearSpacial": LinearSpacialCondition}
+```
+4. In method class the boundary object are grouped by its group name(e.g. "X", X 1 Wall_Dirichlet Const 0)
+```shell
+class FracStep():
+    def __init__(self, root, lambda_list: list, initial_condition = None):
+        """ Inits FracStep class with root of the project, lambda functions list and initial conditions"""
+        ...
+        method_info, mesh_data, _ = loader.load_grid(domain_dict, mesh_boundary_dict)
+        
+        # Get boundaries
+        self.u_boundaries = mesh_data[3]["u"]
+        self.v_boundaries = mesh_data[3]["v"]
+        self.p_boundaries = mesh_data[3]["p"]
+        ...
+        # Initialize Solver
+        self.solver = FracStepSolver((mesh_data[0]["u"], mesh_data[0]["v"], mesh_data[0]["p"]), 
+                                     (mesh_data[1]["dt"], mesh_data[1]["dx"], mesh_data[1]["dy"], 
+                                      mesh_data[1]["kinematic_viscosity"], mesh_data[1]["density"]), 
+                                     (mesh_data[2]["u"], mesh_data[2]["v"], mesh_data[2]["p"], 
+                                      mesh_data[2]["u_exterior"], mesh_data[2]["v_exterior"], mesh_data[2]["p_exterior"]),
+                                     (self.u_boundary_process, self.v_boundary_process, self.p_boundary_process_frac_step),
+                                     poisson_solver, self.extra_computing, step_visualization, final_visualization, initial_condition)
+
+    def solve(self, params: list): 
+        ...
+    # Solvers will call these boundary process functions and the boundary objects in different groups will be processes separately.
+    def u_boundary_process(self, u, v, p, t):
+        for boundary in self.u_boundaries:
+            u = boundary.process(u)
+        return u
+    
+    def v_boundary_process(self, u, v, p, t):
+        for boundary in self.v_boundaries:
+            v = boundary.process(v)
+        return v
+    
+    def p_boundary_process_possion_iterative(self, p):
+        for boundary in self.p_boundaries:
+            p = boundary.process(p)
+        return p
+    
+    def p_boundary_process_frac_step(self, u, v, p, t):
+        pass
+```
