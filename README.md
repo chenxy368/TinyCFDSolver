@@ -111,5 +111,17 @@ lambda_list = [ploter, animator]
 ## Structure
 These slides briefly show how this project is designed and implemented.
 <p align="center">
-  <img width="1200" height="600" src="readme_image/slide1.png">
+  <img width="1000" height="600" src="readme_image/slide1.png">
+</p>
+<p align="center">
+  <img width="1000" height="600" src="readme_image/slide2.png">
+</p>
+<p align="center">
+  <img width="1000" height="600" src="readme_image/slide3.png">
+</p>
+<p align="center">
+  <img width="1000" height="600" src="readme_image/slide4.png">
+</p>
+<p align="center">
+  <img width="1000" height="600" src="readme_image/slide5.png">
 </p>
