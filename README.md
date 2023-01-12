@@ -109,7 +109,7 @@ lambda_list = [ploter, animator]
 4. init.npy(optional), initial conditions
 
 ## Structure
-This slides briefly show how this project is designed and implemented.
+These slides briefly show how this project is designed and implemented.
 <p align="center">
-  <img width="1300" height="600" src="readme_image/slide1.png">
+  <img width="1200" height="600" src="readme_image/slide1.png">
 </p>
