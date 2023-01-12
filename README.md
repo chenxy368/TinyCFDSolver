@@ -1,5 +1,5 @@
 ﻿# TinyCFDSolver
-A tiny python computational fluid dynamics solver with several finite difference methods by Xinyang CHEN(Thanks Wenzhuo XU's help implement fractional step method).  
+A tiny python computational fluid dynamics solver with several finite difference methods by Xinyang CHEN(Thanks Wenzhuo XU's help in implementing fractional step method).  
 <p align="center">
   <img width="460" height="300" src="sample_cases/frac_step/logo_case/result/pressure.gif">
 </p>
@@ -107,3 +107,9 @@ lambda_list = [ploter, animator]
 ```
 
 4. init.npy(optional), initial conditions
+
+## Structure
+This slides briefly show how this project is designed and implemented.
+<p align="center">
+  <img width="1300" height="600" src="readme_image/slide1.png">
+</p>
