@@ -60,3 +60,50 @@ ADI method solving diffusion equation:
   <img width="345" height="225" src="sample_cases/ADI/diffusion_ADI_case/result/temperature.gif">
   <img width="345" height="225" src="sample_cases/ADI/diffusion_ADI_obstacle_case/result/temperature.gif">
 </p>
+
+## Project Files
+Each project requires four setting files(e.g. sample_cases/upwind_central/advection_diffusion_case):  
+1. gird_information.txt(Do not support comment currently)
+```shell
+METHOD #name of the method and parameters for it
+UpwindCentral2D
+PARAMETER #parameters
+dx 0.01
+dy 0.01
+dt 0.002
+u 1.5
+v 1
+molecular_diffusivity_x 0.001
+molecular_diffusivity_y 0.001
+source_temparature 1
+DOMAIN #domain information, in this case only interior grid ID
+mesh -1
+BOUNDARY #boundaries, group gridID name type parameterlist
+X 0 Wall_Neumman Linear 1 0 -1 0
+X 1 Wall_Dirichlet Const 0
+X 2 Heat_Source Const source_temparature
+X 3 Wall_Neumman Linear 1 0 1 0
+X 4 Wall_Neumman Linear 1 -1 0 0
+```
+2. mesh.csv
+```shell
+# A csv file store grid ID, the solver and boundary objects can get their position by getting slice with grid ID.
+0,0,0,0,0,0, ... ,0
+1,-1,-1,-1,-1, ... ,4
+1,-1,-1,-1,-1, ... ,4
+...
+1,-1,-1,-1,-1, ... ,4
+3,3,3,3,3,3,3, ... ,3
+```
+3. lambda_functions.py
+```shell
+# Define all required lambda function of methods in this file. (e.g. visualization and metrics functions)
+from utils import plot_one_contourf, animate
+# Debug ploter
+ploter = lambda X, dx, dy, dt, t: (plot_one_contourf(X.transpose(), dx, dy, "temperature at " + str(round((t + 1) * dt, 3)) 
++ "s", "temperature[$^\circ$C]", 0.0, 1.05))        
+animator = lambda X, dx, dy: (animate(X, dx, dy, "temperature", "temperature[$^\circ$C]", 0.0, 1.0))
+lambda_list = [ploter, animator]
+```
+
+4. init.npy(optional), initial conditions
