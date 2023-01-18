@@ -64,7 +64,7 @@ ADI method solving diffusion equation:
 ## Project Files
 Each project requires four setting files(e.g. sample_cases/upwind_central/advection_diffusion_case):  
 1. gird_information.txt(Do not support comment currently)
-```shell
+```txt
 METHOD #name of the method and parameters for it
 UpwindCentral2D
 PARAMETER #parameters
@@ -86,7 +86,7 @@ X 3 Wall_Neumman Linear 1 0 1 0
 X 4 Wall_Neumman Linear 1 -1 0 0
 ```
 2. mesh.csv
-```shell
+```txt
 # A csv file store grid ID, the solver and boundary objects can get their position by getting slice with grid ID.
 0,0,0,0,0,0, ... ,0
 1,-1,-1,-1,-1, ... ,4
@@ -96,7 +96,7 @@ X 4 Wall_Neumman Linear 1 -1 0 0
 3,3,3,3,3,3,3, ... ,3
 ```
 3. lambda_functions.py
-```shell
+```python
 # Define all required lambda function of methods in this file. (e.g. visualization and metrics functions)
 from utils import plot_one_contourf, animate
 # Debug ploter
@@ -129,13 +129,13 @@ These slides briefly show how this project is designed and implemented.
 ## Implement New Boundary
 E.g. const boundary class
 1. Define the form in the grid_information.txt, and how this boundary class modify the target array.
-```shell
+```txt
 # Group GridID Name Type Params
 X 1 Wall_Dirichlet Const 0
 arr[boundary_postion] = const
 ```
 2. Implement a new boudary class(inherit a base boundary class)
-```shell
+```python
 class ConstCondition(BoundaryCondition):
     def __init__(self, boundary_id: int, boundary_name: str, boundary_domain: tuple, boundary_parameters_list:list):       
         super(ConstCondition, self).__init__(boundary_id, boundary_name, boundary_domain,  "Const", boundary_parameters_list)
@@ -171,7 +171,7 @@ boundary_classes = {"Const": ConstCondition,
                     "LinearSpacial": LinearSpacialCondition}
 ```
 4. In method class the boundary object are grouped by its group name(e.g. "X", X 1 Wall_Dirichlet Const 0)
-```shell
+```python
 class FracStep():
     def __init__(self, root, lambda_list: list, initial_condition = None):
         """ Inits FracStep class with root of the project, lambda functions list and initial conditions"""
